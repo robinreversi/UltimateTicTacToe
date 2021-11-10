@@ -8,9 +8,10 @@ Base.@kwdef mutable struct UTicTacToe
 
     function set_up()
         # initialize board
+
     end
 
-    function take_turn(board_idx, loc) 
+    function take_turn(board_idx, xloc, yloc) 
         # should make sure to update designated board idx
         # also accounting for if they've won the board (-1 then)
     end 
