@@ -1,11 +1,11 @@
 using LinearAlgebra
 
 Base.@kwdef mutable struct TicTacToe
-    board::Matrix{Int8} = zeros(Int8, 3, 3) # 3x3 array
+    board::Matrix{Int64} = zeros(Int64, 3, 3) # 3x3 array
 end
 
-function take_turn(ttt::TicTacToe, current_player::Int8, xloc::Int8, yloc::Int8) 
-    ttt.board[xloc][yloc] = current_player; 
+function take_turn(ttt::TicTacToe, current_player::Int64, xloc::Int64, yloc::Int64) 
+    ttt.board[xloc, yloc] = current_player; 
 end 
 
 function valid_moves(ttt::TicTacToe)
@@ -14,9 +14,9 @@ function valid_moves(ttt::TicTacToe)
 end
 
 function display_board(ttt::TicTacToe)
-    displayable_board = zeros(Int8, 3, 3)
+    displayable_board = Matrix{Union{Nothing, String}}(nothing, 3, 3)
     for i=1:3, j=1:3
-        if (ttt.board[i, j] == 1) 
+        if (ttt.board[i, j] == 1)
             displayable_board[i, j] = "x"
         elseif (ttt.board[i, j] == -1)
             displayable_board[i, j] = "o"
