@@ -27,8 +27,8 @@ end
 
 function has_won(ttt::TicTacToe)
     # returns an Int8 if someone's won, otherwise nothing
-    vert_sum = sum(ttt.board, 1)
-    hori_sum = sum(ttt.board, 2)
+    vert_sum = sum(ttt.board, dims=1)
+    hori_sum = sum(ttt.board, dims=2)
     diag_sum = tr(ttt.board)
     other_diag_sum = tr(reverse(ttt.board, dims = 1))
     if (diag_sum == 3 || other_diag_sum == 3 || 3 in vert_sum || 3 in hori_sum) return 1 end
