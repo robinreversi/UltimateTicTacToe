@@ -1,7 +1,7 @@
 using LinearAlgebra
 
-Base.@kwdef mutable struct TicTacToe
-    board::Matrix{Int64} = zeros(Int64, 3, 3) # 3x3 array
+mutable struct TicTacToe
+    board::Matrix{Int64} # 3x3 array
 end
 
 function take_turn(ttt::TicTacToe, current_player::Int64, xloc::Int64, yloc::Int64) 
@@ -10,6 +10,9 @@ end
 
 function valid_moves(ttt::TicTacToe)
     # returns a list of tuples of valid positions to play
+    if (has_won(ttt))
+        return []
+    end
     return findall(x->x==0, ttt.board)
 end
 
