@@ -10,7 +10,7 @@ end
 
 function valid_moves(ttt::TicTacToe)
     # returns a list of tuples of valid positions to play
-    if (has_won(ttt))
+    if (has_won(ttt) != 0)
         return []
     end
     return findall(x->x==0, ttt.board)
@@ -28,12 +28,12 @@ function display_board(ttt::TicTacToe)
     display(displayable_board)
 end
 
-function has_won(ttt::TicTacToe)
+function has_won(board::Matrix{Int64})
     # returns an Int8 if someone's won, otherwise nothing
-    vert_sum = sum(ttt.board, dims=1)
-    hori_sum = sum(ttt.board, dims=2)
-    diag_sum = tr(ttt.board)
-    other_diag_sum = tr(reverse(ttt.board, dims = 1))
+    vert_sum = sum(board, dims=1)
+    hori_sum = sum(board, dims=2)
+    diag_sum = tr(board)
+    other_diag_sum = tr(reverse(board, dims = 1))
     if (diag_sum == 3 || other_diag_sum == 3 || 3 in vert_sum || 3 in hori_sum) return 1 end
     if (diag_sum == -3 || other_diag_sum == -3 || -3 in vert_sum || -3 in hori_sum) return -1 end
     return 0
