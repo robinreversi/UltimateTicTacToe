@@ -22,14 +22,11 @@ function take_turn(uttt::UTicTacToe, board_xidx, board_yidx, xloc, yloc)
 end 
 
 function convert_action_to_idxs(a) 
-    board_xidx = a[1]
-    board_yidx = a[2]
-    xloc = a[3][1]
-    yloc = a[3][2]
+    board_xidx, board_yidx, xloc, yloc = a[1], a[2], a[3], a[4]
     return board_xidx, board_yidx, xloc, yloc
 end
 
-function randstep(uttt:UTicTacToe, a)
+function randstep(uttt::UTicTacToe, a)
     uttt_copy = deepcopy(uttt)
     board_xidx, board_yidx, xloc, yloc = convert_action_to_idxs(a)
     take_turn(uttt_copy, board_xidx, board_yidx, xloc, yloc)
@@ -53,19 +50,20 @@ function whose_turn(uttt::UTicTacToe)
 end
 
 function u_valid_moves(uttt::UTicTacToe)
-    valid_mvs = Matrix(undef, 0, 3)
+    valid_mvs = [] #Array{Tuple{Int64, Int64, Int64, Int64}}[]
+    # valid_mvs = Matrix(undef, 0, 3)
     if uttt.ttt_boards_x == -1
         for i = 1:3, j = 1:3
             board_valid_mvs = valid_moves(uttt.ttt_boards[i,j])
-            n_mvs = size(board_valid_mvs)[1]
-            board_valid_mvs = hcat(ones(Int64, n_mvs)*i, ones(Int64, n_mvs)*j, board_valid_mvs) # 9x3 Matrix{Any} with elements formated as [i,j,CartesianIndex]
-            valid_mvs = vcat(valid_mvs, board_valid_mvs)
+            for move in board_valid_mvs
+                push!(valid_mvs, (i, j, move[1], move[2]))
+            end
         end
     else 
         board_valid_mvs = valid_moves(uttt.ttt_boards[uttt.ttt_boards_x, uttt.ttt_boards_y])
-        n_mvs = size(board_valid_mvs)[1]
-        board_valid_mvs = hcat(ones(Int64, n_mvs)*uttt.ttt_boards_x, ones(Int64, n_mvs)*uttt.ttt_boards_y, board_valid_mvs) # 9x3 Matrix{Any} with elements formated as [i,j,CartesianIndex]
-        valid_mvs = vcat(valid_mvs, board_valid_mvs)
+        for move in board_valid_mvs
+            push!(valid_mvs, (uttt.ttt_boards_x, uttt.ttt_boards_y, move[1], move[2]))
+        end
     end
     return valid_mvs
 end
@@ -87,65 +85,65 @@ function display_board(uttt::UTicTacToe)
     display(displayable_board)
 end
 
-# Initialize 9 individual TicTacToe boards
-ttt_boards = [TicTacToe(zeros(Int64, 3, 3)) for i = 1:3, j = 1:3]
+# # Initialize 9 individual TicTacToe boards
+# ttt_boards = [TicTacToe(zeros(Int64, 3, 3)) for i = 1:3, j = 1:3]
 
-# Initialize Ultimate TicTacToe game
-uttt_game = UTicTacToe(ttt_boards, 1, -1, -1)
+# # Initialize Ultimate TicTacToe game
+# uttt_game = UTicTacToe(ttt_boards, 1, -1, -1)
 
-while(u_has_won(uttt_game) == 0)
-    run(`clear`)
+# while(u_has_won(uttt_game) == 0)
+#     run(`clear`)
 
-    println("Current board:")
-    println()
+#     println("Current board:")
+#     println()
 
-    display_board(uttt_game)
+#     display_board(uttt_game)
 
-    println()
-    println("Player $(Int8(-(uttt_game.current_player)/2 + 1.5))'s turn...")
-    println()
+#     println()
+#     println("Player $(Int8(-(uttt_game.current_player)/2 + 1.5))'s turn...")
+#     println()
 
-    if uttt_game.ttt_boards_x != -1
-        println("You must play in TicTacToe board $(uttt_game.ttt_boards_x), $(uttt_game.ttt_boards_y)")
-    end
+#     if uttt_game.ttt_boards_x != -1
+#         println("You must play in TicTacToe board $(uttt_game.ttt_boards_x), $(uttt_game.ttt_boards_y)")
+#     end
 
-    println()
+#     println()
 
-    print("Player $(Int8(-(uttt_game.current_player)/2 + 1.5))'s move is: ")
-    board_xidx, board_yidx, xloc, yloc = -1, -1, -1, -1
-    while true 
+#     print("Player $(Int8(-(uttt_game.current_player)/2 + 1.5))'s move is: ")
+#     board_xidx, board_yidx, xloc, yloc = -1, -1, -1, -1
+#     while true 
         
-        while true
-            move_str = readline()
+#         while true
+#             move_str = readline()
             
-            move_str_vec = split(move_str, ",")
-            #parse_result = map(x->tryparse(Int64, move_str_vec))
-            board_xidx, board_yidx, xloc, yloc = tryparse(Int64, move_str_vec[1]), tryparse(Int64, move_str_vec[2]), tryparse(Int64, move_str_vec[3]), tryparse(Int64, move_str_vec[4])
-            if board_xidx !== nothing  && board_yidx !== nothing && xloc !== nothing && yloc !== nothing
-                break
-            end
-            println()
-            print("Please enter your move in the form of \"int,int,int,int\" \"1,1,1,1\": ")
-        end
+#             move_str_vec = split(move_str, ",")
+#             #parse_result = map(x->tryparse(Int64, move_str_vec))
+#             board_xidx, board_yidx, xloc, yloc = tryparse(Int64, move_str_vec[1]), tryparse(Int64, move_str_vec[2]), tryparse(Int64, move_str_vec[3]), tryparse(Int64, move_str_vec[4])
+#             if board_xidx !== nothing  && board_yidx !== nothing && xloc !== nothing && yloc !== nothing
+#                 break
+#             end
+#             println()
+#             print("Please enter your move in the form of \"int,int,int,int\" \"1,1,1,1\": ")
+#         end
 
-        cidx = CartesianIndex(xloc, yloc)
-        move = hcat(board_xidx, board_yidx, cidx)
+#         cidx = CartesianIndex(xloc, yloc)
+#         move = hcat(board_xidx, board_yidx, cidx)
 
-        is_valid = false
-        valid_mvs = u_valid_moves(uttt_game)
-        for i in 1:size(valid_mvs)[1]
-            if move == valid_mvs[i:i,:]
-                is_valid = true
-            end
-        end
+#         is_valid = false
+#         valid_mvs = u_valid_moves(uttt_game)
+#         for i in 1:size(valid_mvs)[1]
+#             if move == valid_mvs[i:i,:]
+#                 is_valid = true
+#             end
+#         end
         
-        if is_valid
-            break
-        end
-        println()
-        print("Please enter a valid move: ")
-    end
-    take_turn(uttt_game, board_xidx, board_yidx, xloc, yloc)
-end
+#         if is_valid
+#             break
+#         end
+#         println()
+#         print("Please enter a valid move: ")
+#     end
+#     take_turn(uttt_game, board_xidx, board_yidx, xloc, yloc)
+# end
 
-println("Player $(u_has_won(uttt_game)) has won the game.") 
+# println("Player $(u_has_won(uttt_game)) has won the game.") 
