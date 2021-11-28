@@ -1,4 +1,4 @@
-include("/Users/lucasorts/Desktop/School work/Coterm Year Work/CS238/UltimateTicTacToe/games/tictactoe.jl")
+include("tictactoe.jl")
 
 mutable struct UTicTacToe
     ttt_boards::Matrix{TicTacToe}  # 3x3 array of tic tac toe boards
