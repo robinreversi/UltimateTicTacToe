@@ -27,14 +27,14 @@ end
 
 function choose_action_helper(game::UTicTacToe, d, m, g, player)
     if (d <= 0)
-        return (a=nothing, u=U(s, player))
+        return (a=nothing, u=U(game, player))
     end
     best = (a=nothing, u=-Inf)
     for a in u_valid_moves(game)
         u = 0.0
         for i in 1:m
             updated_game = randstep(game, a)
-            r = U(s, player)
+            r = U(updated_game, player)
             new_a, next_utility = choose_action_helper(updated_game, d-1, m, g, player)
             u += (r + g *next_utility) / m
         end
