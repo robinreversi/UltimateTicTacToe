@@ -10,7 +10,7 @@ end
 
 function valid_moves(ttt::TicTacToe)
     # returns a list of tuples of valid positions to play
-    if (has_won(ttt) != 0)
+    if (has_won(ttt.board) != 0)
         return []
     end
     return findall(x->x==0, ttt.board)
