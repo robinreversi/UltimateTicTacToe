@@ -21,6 +21,15 @@ function take_turn(uttt::UTicTacToe, board_xidx, board_yidx, xloc, yloc)
     uttt.current_player = -uttt.current_player # switches current player
 end 
 
+function randstep(uttt:UTicTacToe, a)
+    uttt_copy = deepcopy(uttt)
+    take_turn(uttt_copy, board_xidx, board_yidx, xloc, yloc))
+    rand_move = rand(u_valid_moves(uttt_copy))
+    
+    take_turn(uttt_copy, board_xidx, board_yidx, xloc, yloc))
+    return uttt_copy
+end
+
 function u_has_won(uttt::UTicTacToe)
     # iterate through boards & check
     win_arr = zeros(Int64, 3, 3)
