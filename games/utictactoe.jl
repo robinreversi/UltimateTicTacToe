@@ -21,19 +21,20 @@ function take_turn(uttt::UTicTacToe, board_xidx, board_yidx, xloc, yloc)
     uttt.current_player = -uttt.current_player # switches current player
 end 
 
-function randstep(uttt:UTicTacToe, a)
-    uttt_copy = deepcopy(uttt)
+function convert_action_to_idxs(a) 
     board_xidx = a[1]
     board_yidx = a[2]
     xloc = a[3][1]
     yloc = a[3][2]
+    return board_xidx, board_yidx, xloc, yloc
+end
+
+function randstep(uttt:UTicTacToe, a)
+    uttt_copy = deepcopy(uttt)
+    board_xidx, board_yidx, xloc, yloc = convert_action_to_idxs(a)
     take_turn(uttt_copy, board_xidx, board_yidx, xloc, yloc)
     rand_move = rand(u_valid_moves(uttt_copy))
-    
-    board_xidx = rand_move[1]
-    board_yidx = rand_move[2]
-    xloc = rand_move[3][1]
-    yloc = rand_move[3][2]
+    board_xidx, board_yidx, xloc, yloc = convert_action_to_idxs(rand_move)
     take_turn(uttt_copy, board_xidx, board_yidx, xloc, yloc)
     return uttt_copy
 end

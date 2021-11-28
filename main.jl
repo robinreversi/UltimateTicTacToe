@@ -26,13 +26,11 @@ function main(algorithm, ARGS)
     algo, game = setup(algorithm, ARGS)
     while(u_has_won(game) == 0)
         a = choose_action(game, algo)
-        print(a)
-        # todo -- extract coordinates from the action properly
-        take_turn(game, -1, -1, -1, -1)
+        board_xidx, board_yidx, xloc, yloc = convert_action_to_idxs(a) 
+        take_turn(game, board_xidx, board_yidx, xloc, yloc)
         display_board(game)
+        println()
     end
-    
-    
 end
 
 if length(ARGS) < 1
