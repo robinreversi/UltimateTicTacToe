@@ -1,7 +1,7 @@
 include("algorithms/sparse_sampling.jl")
 include("games/utictactoe.jl")
 
-function choose_action(game::UTicTacToe, algo::nothing)
+function choose_action(game::UTicTacToe, algo)
     error("invalid algorithm specified")
 end
 
@@ -14,7 +14,7 @@ function setup(algorithm, ARGS)
         if length(ARGS) != 4
             error("usage: julia project1.jl sparse_sampling <m> <d> <g>")
         end
-        algo = SparseSampling(ARGS[2], ARGS[3], ARGS[4])
+        algo = SparseSampling(tryparse(Int64, ARGS[2]), tryparse(Int64, ARGS[3]), tryparse(Float64, ARGS[4]))
     end
 
     ttt_boards = [TicTacToe(zeros(Int64, 3, 3)) for i = 1:3, j = 1:3]
