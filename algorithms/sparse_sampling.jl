@@ -1,22 +1,10 @@
 include("../games/utictactoe.jl")
+include("../heuristics/heuristics.jl")
 
 struct SparseSampling
     m # number of samples
     d # depth
     g # gamma discount factor
-end
-
-function U(s, player)
-    """
-    TODO: heuristic function
-    should return 
-        inf if the player wins
-        -inf if the player lost
-        heuristic if the neither
-    
-    possibly move into separate heuristic file?
-    """
-    return 0
 end
 
 function choose_action(game::UTicTacToe, algo::SparseSampling) 
