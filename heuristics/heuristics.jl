@@ -11,7 +11,8 @@ function U(game, player)
     currently evaluates the global positions 
 
     """
-    println("===============")
+    # println()
+    # println("===============")
     game_winner = u_has_won(game)
     if (game_winner == player)
         return Inf
@@ -37,7 +38,7 @@ function U(game, player)
             board_u -= w[i, j] * eval_ttt_board_opposites(game.ttt_boards[i, j].board, -1)
         end
         u += board_u
-        println("DEBUG: Utility for board " * string(i) * ", " * string(j) * " :" * string(board_u))
+        # println("DEBUG: Utility for board " * string(i) * ", " * string(j) * " :" * string(board_u))
     end
     u += eval_ttt_board_opposites(macro_uttt_state, 1)
     u -= eval_ttt_board_opposites(macro_uttt_state, -1)
@@ -45,10 +46,9 @@ function U(game, player)
     # adjusts for if the player is the -1 player
     # does nothing if the player is the 1 player
     u *= player
-    println("===============")
-    println("DEBUG: Utility for the following game from player " * string(player) * "'s perspective: " * string(u))
-    display_board(game)
-    println()
+    # println("DEBUG: Utility for the following game from player " * string(player) * "'s perspective: " * string(u))
+    # display_board(game)
+    # println()
     return u
 end
 
@@ -87,19 +87,19 @@ function eval_ttt_board_opposites(board, player)
         opposite_score += 2
     end
 
-    if (board[3, 1] == board[3, 3] && board[1, 1] == player)
+    if (board[3, 1] == board[3, 3] && board[3, 1] == player)
         opposite_score += 2
     end
 
-    if (board[1, 3] == board[3, 3] && board[1, 1] == player)
+    if (board[1, 3] == board[3, 3] && board[1, 3] == player)
         opposite_score += 2
     end
 
-    if (board[2, 1] == board[2, 3] && board[1, 1] == player)
+    if (board[2, 1] == board[2, 3] && board[2, 1] == player)
         opposite_score += 2
     end
 
-    if (board[1, 2] == board[3, 2] && board[1, 1] == player)
+    if (board[1, 2] == board[3, 2] && board[1, 2] == player)
         opposite_score += 2
     end
     return opposite_score

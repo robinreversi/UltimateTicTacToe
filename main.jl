@@ -28,8 +28,8 @@ function main(algorithm, ARGS)
         a = choose_action(game, algo)
         board_xidx, board_yidx, xloc, yloc = convert_action_to_idxs(a) 
         take_turn(game, board_xidx, board_yidx, xloc, yloc)
-        # display_board(game)
-        # println()
+        display_board(game)
+        println()
     end
 end
 
