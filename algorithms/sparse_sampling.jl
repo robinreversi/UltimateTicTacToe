@@ -14,19 +14,21 @@ function choose_action(game::UTicTacToe, algo::SparseSampling)
 end
 
 function choose_action_helper(game::UTicTacToe, d, m, g, player)
-    if (d <= 0)
+    if (d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves(game)))
         return (a=nothing, u=U(game, player))
     end
     best = (a=nothing, u=-Inf)
-    for a in u_valid_moves(game)
+    valid_moves = u_valid_moves(game)
+    for a in valid_moves
         u = 0.0
         for i in 1:m
             updated_game = randstep(game, a)
             r = U(updated_game, player)
+            next_utility = 0
             new_a, next_utility = choose_action_helper(updated_game, d-1, m, g, player)
-            u += (r + g *next_utility) / m
+            u += (r + g * next_utility) / m
         end
-        if (u > best.u)
+        if (u >= best.u)
             best = (a=a, u=u)
         end
     end
@@ -36,7 +38,10 @@ end
 function randstep(uttt::UTicTacToe, a)
     uttt_copy = deepcopy(uttt)
     take_turn(uttt_copy, a)
-    rand_move = rand(u_valid_moves(uttt_copy))
-    take_turn(uttt_copy, rand_move)
+    next_valid_mvs = u_valid_moves(uttt_copy)
+    if (u_has_won(uttt) == 0 && !isempty(next_valid_mvs))
+        rand_move = rand(next_valid_mvs)
+        take_turn(uttt_copy, rand_move)
+    end
     return uttt_copy
 end

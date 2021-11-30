@@ -24,10 +24,10 @@ end
 
 function main(algorithm, ARGS)
     algo, game = setup(algorithm, ARGS)
-    while(u_has_won(game) == 0)
+    while(u_has_won(game) == 0 && !isempty(u_valid_moves(game)))
         a = choose_action(game, algo)
         take_turn(game, a)
-        # display_board(game)
+        display_board(game)
         println()
     end
 end
