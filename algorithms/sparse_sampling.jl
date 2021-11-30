@@ -44,3 +44,11 @@ function choose_action_helper(game::UTicTacToe, d, m, g, player)
     end
     return best
 end
+
+function randstep(uttt::UTicTacToe, a)
+    uttt_copy = deepcopy(uttt)
+    take_turn(uttt_copy, a)
+    rand_move = rand(u_valid_moves(uttt_copy))
+    take_turn(uttt_copy, rand_move)
+    return uttt_copy
+end

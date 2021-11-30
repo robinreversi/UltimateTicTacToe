@@ -7,7 +7,9 @@ mutable struct UTicTacToe
     ttt_boards_y::Int64 # designated y board idx
 end
 
-function take_turn(uttt::UTicTacToe, board_xidx, board_yidx, xloc, yloc) 
+function take_turn(uttt::UTicTacToe, a) 
+    board_xidx, board_yidx, xloc, yloc = a[1], a[2], a[3], a[4]
+
     # should make sure to update designated board idx
     # also accounting for if they've won the board (-1 then)
     take_turn(uttt.ttt_boards[board_xidx, board_yidx], uttt.current_player, xloc, yloc)
@@ -20,21 +22,6 @@ function take_turn(uttt::UTicTacToe, board_xidx, board_yidx, xloc, yloc)
     end
     uttt.current_player = -uttt.current_player # switches current player
 end 
-
-function convert_action_to_idxs(a) 
-    board_xidx, board_yidx, xloc, yloc = a[1], a[2], a[3], a[4]
-    return board_xidx, board_yidx, xloc, yloc
-end
-
-function randstep(uttt::UTicTacToe, a)
-    uttt_copy = deepcopy(uttt)
-    board_xidx, board_yidx, xloc, yloc = convert_action_to_idxs(a)
-    take_turn(uttt_copy, board_xidx, board_yidx, xloc, yloc)
-    rand_move = rand(u_valid_moves(uttt_copy))
-    board_xidx, board_yidx, xloc, yloc = convert_action_to_idxs(rand_move)
-    take_turn(uttt_copy, board_xidx, board_yidx, xloc, yloc)
-    return uttt_copy
-end
 
 function u_has_won(uttt::UTicTacToe)
     # iterate through boards & check
