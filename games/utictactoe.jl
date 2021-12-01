@@ -7,6 +7,30 @@ mutable struct UTicTacToe
     ttt_boards_y::Int64 # designated y board idx
 end
 
+function randstep(uttt::UTicTacToe, a)
+    uttt_copy = deepcopy(uttt)
+    take_turn(uttt_copy, a)
+    next_valid_mvs = u_valid_moves(uttt_copy)
+    if (u_has_won(uttt) == 0 && !isempty(next_valid_mvs))
+        rand_move = rand(next_valid_mvs)
+        take_turn(uttt_copy, rand_move)
+    end
+    return uttt_copy
+end
+
+function get_s(uttt::UTicTacToe)
+    uttt_board = zeros((9, 9))
+    for  j=1:9, i=1:9
+        xloc = (i-1) ÷ 3 + 1
+        yloc = (j-1) ÷ 3 + 1
+        inner_xloc = (i-1) % 3 + 1
+        inner_yloc = (j-1) % 3 + 1
+        inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
+        uttt_board[i, j] = inner_board_val
+    end
+    return (uttt_board, uttt.current_player, uttt.ttt_boards_x, uttt.ttt_boards_y)
+end
+
 function take_turn(uttt::UTicTacToe, a) 
     board_xidx, board_yidx, xloc, yloc = a[1], a[2], a[3], a[4]
 
