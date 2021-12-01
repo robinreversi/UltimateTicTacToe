@@ -84,67 +84,70 @@ function display_board(uttt::UTicTacToe)
     end
 end
 
-# Initialize 9 individual TicTacToe boards
-ttt_boards = [TicTacToe(zeros(Int64, 3, 3)) for i = 1:3, j = 1:3]
 
-# Initialize Ultimate TicTacToe game
-uttt_game = UTicTacToe(ttt_boards, 1, -1, -1)
 
-while(u_has_won(uttt_game) == 0)
-    run(`clear`)
+# # Initialize 9 individual TicTacToe boards
+# ttt_boards = [TicTacToe(zeros(Int64, 3, 3)) for i = 1:3, j = 1:3]
 
-    println("Current board:")
-    println()
+# # Initialize Ultimate TicTacToe game
+# uttt_game = UTicTacToe(ttt_boards, 1, -1, -1)
 
-    display_board(uttt_game)
+# while(u_has_won(uttt_game) == 0)
+#     run(`clear`)
 
-    println()
-    println("Player $(Int8(-(uttt_game.current_player)/2 + 1.5))'s turn...")
-    println()
+#     println("Current board:")
+#     println()
 
-    if uttt_game.ttt_boards_x != -1
-        println("You must play in TicTacToe board $(uttt_game.ttt_boards_x), $(uttt_game.ttt_boards_y)")
-    end
+#     display_board(uttt_game)
 
-    println()
+#     println()
+#     println("Player $(Int8(-(uttt_game.current_player)/2 + 1.5))'s turn...")
+#     println()
 
-    print("Player $(Int8(-(uttt_game.current_player)/2 + 1.5))'s move is: ")
-    move = (-1,-1,-1,-1)
-    while true 
-        board_xidx, board_yidx, xloc, yloc = -1, -1, -1, -1
-        while true
-            move_str = readline()
+#     if uttt_game.ttt_boards_x != -1
+#         println("You must play in TicTacToe board $(uttt_game.ttt_boards_x), $(uttt_game.ttt_boards_y)")
+#     end
+
+#     println()
+
+#     print("Player $(Int8(-(uttt_game.current_player)/2 + 1.5))'s move is: ")
+#     move = (-1,-1,-1,-1)
+#     while true 
+#         board_xidx, board_yidx, xloc, yloc = -1, -1, -1, -1
+#         while true
+#             move_str = readline()
             
-            move_str_vec = split(move_str, ",")
-            board_xidx, board_yidx, xloc, yloc = tryparse(Int64, move_str_vec[1]), tryparse(Int64, move_str_vec[2]), tryparse(Int64, move_str_vec[3]), tryparse(Int64, move_str_vec[4])
-            if board_xidx !== nothing  && board_yidx !== nothing && xloc !== nothing && yloc !== nothing
-                break
-            end
-            println()
-            print("Please enter your move in the form of \"int,int,int,int\" \"1,1,1,1\": ")
-        end
+#             move_str_vec = split(move_str, ",")
+#             board_xidx, board_yidx, xloc, yloc = tryparse(Int64, move_str_vec[1]), tryparse(Int64, move_str_vec[2]), tryparse(Int64, move_str_vec[3]), tryparse(Int64, move_str_vec[4])
+#             if board_xidx !== nothing  && board_yidx !== nothing && xloc !== nothing && yloc !== nothing
+#                 break
+#             end
+#             println()
+#             print("Please enter your move in the form of \"int,int,int,int\" \"1,1,1,1\": ")
+#         end
 
-        move = (board_xidx, board_yidx, xloc, yloc)
-        is_valid = false
-        valid_mvs = u_valid_moves(uttt_game)
-        for a in valid_mvs
-            if move == a
-                is_valid = true
-            end
-        end
+#         move = (board_xidx, board_yidx, xloc, yloc)
+#         is_valid = false
+#         valid_mvs = u_valid_moves(uttt_game)
+#         for a in valid_mvs
+#             if move == a
+#                 is_valid = true
+#             end
+#         end
         
-        if is_valid
-            break
-        end
-        println()
-        print("Please enter a valid move: ")
-    end
-    take_turn(uttt_game, move)
-end
+#         if is_valid
+#             break
+#         end
+#         println()
+#         print("Please enter a valid move: ")
+#     end
+#     take_turn(uttt_game, move)
+# end
 
-println("Current board:")
-println()
+# println("Current board:")
+# println()
 
-display_board(uttt_game)
+# display_board(uttt_game)
 
-println("Player $(u_has_won(uttt_game)) has won the game.") 
+# println("Player $(u_has_won(uttt_game)) has won the game.") 
+

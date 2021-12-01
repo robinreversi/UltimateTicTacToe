@@ -17,18 +17,78 @@ function setup(algorithm, ARGS)
         algo = SparseSampling(tryparse(Int64, ARGS[2]), tryparse(Int64, ARGS[3]), tryparse(Float64, ARGS[4]))
     end
 
+    # Initialize 9 individual TicTacToe boards
     ttt_boards = [TicTacToe(zeros(Int64, 3, 3)) for i = 1:3, j = 1:3]
+
+    # Initialize Ultimate TicTacToe game
     game = UTicTacToe(ttt_boards, 1, -1, -1)
     return algo, game
 end
 
+function print_game_info(game::UTicTacToe, a)
+    run(`clear`)
+    println("Current board:\n")
+    display_board(game)
+    println()
+
+    if a !== nothing
+        print("The computer's last move was: ")
+        println(a)
+    end
+
+    if game.ttt_boards_x != -1
+        println("You must play in TicTacToe board $(game.ttt_boards_x), $(game.ttt_boards_y)")
+    end
+    println()
+end
+
+function get_player_move(game::UTicTacToe)
+    print("Your move is: ")
+    while true 
+        board_xidx, board_yidx, xloc, yloc = -1, -1, -1, -1
+        while true
+            move_vec = split(readline(), ",")
+            board_xidx, board_yidx, xloc, yloc = tryparse(Int64, move_vec[1]), tryparse(Int64, move_vec[2]), tryparse(Int64, move_vec[3]), tryparse(Int64, move_vec[4])
+            if board_xidx !== nothing  && board_yidx !== nothing && xloc !== nothing && yloc !== nothing
+                break
+            end
+            println()
+            print("Please enter your move in the form of \"int,int,int,int\" \"1,1,1,1\": ")
+        end
+
+        move = (board_xidx, board_yidx, xloc, yloc)
+        valid_mvs = u_valid_moves(game)
+        for a in valid_mvs
+            if move == a
+                return move
+            end
+        end
+        println()
+        print("Please enter a valid move: ")
+    end
+end
+
 function main(algorithm, ARGS)
     algo, game = setup(algorithm, ARGS)
+    # while(u_has_won(game) == 0 && !isempty(u_valid_moves(game)))
+    #     a = choose_action(game, algo)
+    #     take_turn(game, a)
+    #     display_board(game)
+    #     println()
+    # end
+    computers_turn = false
+    a = nothing
     while(u_has_won(game) == 0 && !isempty(u_valid_moves(game)))
-        a = choose_action(game, algo)
-        take_turn(game, a)
-        display_board(game)
-        println()
+        if computers_turn == false
+            print_game_info(game, a)
+            move = get_player_move(game)
+            take_turn(game, move)
+            computers_turn = true
+        else
+            a = choose_action(game, algo)
+            take_turn(game, a)
+            computers_turn = false
+        end
     end
 end
 
