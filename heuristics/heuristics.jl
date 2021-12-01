@@ -49,6 +49,14 @@ function U(game, player)
     # println("DEBUG: Utility for the following game from player " * string(player) * "'s perspective: " * string(u))
     # display_board(game)
     # println()
+
+    if game.ttt_boards_x == -1 # if free board choice
+        if game.current_player == player
+            u += 15
+        else
+            u -= 15
+        end
+    end
     return u
 end
 

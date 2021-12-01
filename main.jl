@@ -90,6 +90,10 @@ function main(algorithm, ARGS)
             computers_turn = false
         end
     end
+    println("Current board:\n")
+    display_board(game)
+    println("Game over!") 
+    #println("Player $(u_has_won(uttt_game)) has won the game.") 
 end
 
 if length(ARGS) < 1
