@@ -1,4 +1,5 @@
 include("algorithms/sparse_sampling.jl")
+include("algorithms/expectiminimax.jl")
 include("games/utictactoe.jl")
 
 function choose_action(game::UTicTacToe, algo)
@@ -15,6 +16,13 @@ function setup(algorithm, ARGS)
             error("usage: julia project1.jl sparse_sampling <m> <d> <g>")
         end
         algo = SparseSampling(tryparse(Int64, ARGS[2]), tryparse(Int64, ARGS[3]), tryparse(Float64, ARGS[4]))
+    end
+
+    if (algorithm == "expectiminimax")
+        if length(ARGS) != 3
+            error("usage: julia project1.jl expectiminimax <d> <g>")
+        end
+        algo = ExpectiMiniMax(tryparse(Int64, ARGS[2]), tryparse(Float64, ARGS[3]))
     end
 
     # Initialize 9 individual TicTacToe boards
