@@ -34,14 +34,3 @@ function choose_action_helper(game::UTicTacToe, d, m, g, player)
     end
     return best
 end
-
-function randstep(uttt::UTicTacToe, a)
-    uttt_copy = deepcopy(uttt)
-    take_turn(uttt_copy, a)
-    next_valid_mvs = u_valid_moves(uttt_copy)
-    if (u_has_won(uttt) == 0 && !isempty(next_valid_mvs))
-        rand_move = rand(next_valid_mvs)
-        take_turn(uttt_copy, rand_move)
-    end
-    return uttt_copy
-end
