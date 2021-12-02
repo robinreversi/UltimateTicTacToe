@@ -2,6 +2,7 @@ include("algorithms/sparse_sampling.jl")
 include("algorithms/expectiminimax.jl")
 include("algorithms/mcts.jl")
 include("games/utictactoe.jl")
+using BSON
 
 function choose_action(game::UTicTacToe, algo)
     error("invalid algorithm specified")
@@ -32,8 +33,8 @@ function setup(algorithm, ARGS)
         end
         N = Dict{Any, Int64}()
         Q = Dict{Any, Float64}()
-        d = tryparse(Int16, ARGS[2])
-        m = tryparse(Int32, ARGS[3])
+        d = tryparse(Int64, ARGS[2])
+        m = tryparse(Int64, ARGS[3])
         c = tryparse(Float64, ARGS[4])
         γ = tryparse(Float64, ARGS[5])
         algo = MonteCarloTreeSearch(N, Q, d, m, c, γ)

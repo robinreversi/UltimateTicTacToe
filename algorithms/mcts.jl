@@ -1,11 +1,14 @@
 include("../games/utictactoe.jl")
 include("../heuristics/heuristics.jl")
 
+using BSON
+using ProgressBars
+
 struct MonteCarloTreeSearch
     N::Dict{Any, Int64} # visit counts
     Q::Dict{Any, Float64} # action value estimates 
-    d::Int16 # depth
-    m::Int32 # number of simulations 
+    d::Int64 # depth
+    m::Int64 # number of simulations 
     c::Float64 # exploration constant
     γ::Float64 # discount
 end 
@@ -47,3 +50,22 @@ function explore(algo::MonteCarloTreeSearch, s, valid_mvs)
     Ns = sum(algo.N[(s,a)] for a in valid_mvs)
     return argmax(a->algo.Q[(s,a)] + algo.c*bonus(algo.N[(s,a)], Ns), valid_mvs)
 end 
+
+function train(d::Int64, m::Int64, c::Float64, γ::Float64, num_games::Int64, save_every::Int64)
+    N = Dict{Any, Int64}()
+    Q = Dict{Any, Float64}()
+    mcts = MonteCarloTreeSearch(N, Q, d, m, c, γ)
+    for i in ProgressBar(1:num_games)
+        ttt_boards = [TicTacToe(zeros(Int64, 3, 3)) for i = 1:3, j = 1:3]
+        game = UTicTacToe(ttt_boards, 1, -1, -1)
+        while(u_has_won(game) == 0 && !isempty(u_valid_moves(game)))
+            a = choose_action(game, mcts)
+            take_turn(game, a)
+        end
+        
+        if (i % save_every == 0)
+            bson("mcts_states/mcts_N_game_" * string(i), mcts.N)
+            bson("mcts_states/mcts_Q_game_" * string(i), mcts.Q)
+        end
+    end
+end

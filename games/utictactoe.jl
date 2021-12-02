@@ -1,11 +1,14 @@
-include("tictactoe.jl")
 
+include("tictactoe.jl")
+using Base.Iterators
 mutable struct UTicTacToe
     ttt_boards::Matrix{TicTacToe}  # 3x3 array of tic tac toe boards
     current_player::Int64 # 1 or -1
     ttt_boards_x::Int64 # designated x ultimate board idx
     ttt_boards_y::Int64 # designated y board idx
 end
+
+
 
 function randstep(uttt::UTicTacToe, a)
     uttt_copy = deepcopy(uttt)
@@ -19,7 +22,7 @@ function randstep(uttt::UTicTacToe, a)
 end
 
 function get_s(uttt::UTicTacToe)
-    uttt_board = zeros((9, 9))
+    uttt_board = zeros(Int8, (9, 9))
     for  j=1:9, i=1:9
         xloc = (i-1) ÷ 3 + 1
         yloc = (j-1) ÷ 3 + 1
@@ -28,7 +31,7 @@ function get_s(uttt::UTicTacToe)
         inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
         uttt_board[i, j] = inner_board_val
     end
-    return (uttt_board, uttt.current_player, uttt.ttt_boards_x, uttt.ttt_boards_y)
+    return (join(collect(Iterators.flatten(uttt_board))), uttt.current_player, uttt.ttt_boards_x, uttt.ttt_boards_y)
 end
 
 function take_turn(uttt::UTicTacToe, a) 
