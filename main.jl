@@ -115,6 +115,7 @@ function main(algorithm, ARGS)
             computers_turn = false
         end
     end
+    run(`clear`)
     println("Current board:\n")
     display_board(game)
     println("Game over!") 
