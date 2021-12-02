@@ -29,11 +29,11 @@ function setup(algorithm, ARGS)
     ttt_boards = [TicTacToe(zeros(Int64, 3, 3)) for i = 1:3, j = 1:3]
 
     # Initialize Ultimate TicTacToe game
-    game = UTicTacToe(ttt_boards, 1, -1, -1)
+    game = UTicTacToe(ttt_boards, 1, -1, -1, (-1,-1,-1,-1))
     return algo, game
 end
 
-function print_game_info(game::UTicTacToe, a)
+function print_game_info(game::UTicTacToe, a::Union{Tuple{Int64, Int64, Int64, Int64}, Nothing})
     run(`clear`)
     println("Current board:\n")
     display_board(game)
@@ -56,9 +56,11 @@ function get_player_move(game::UTicTacToe)
         board_xidx, board_yidx, xloc, yloc = -1, -1, -1, -1
         while true
             move_vec = split(readline(), ",")
-            board_xidx, board_yidx, xloc, yloc = tryparse(Int64, move_vec[1]), tryparse(Int64, move_vec[2]), tryparse(Int64, move_vec[3]), tryparse(Int64, move_vec[4])
-            if board_xidx !== nothing  && board_yidx !== nothing && xloc !== nothing && yloc !== nothing
-                break
+            if size(move_vec) == (4,)
+                board_xidx, board_yidx, xloc, yloc = tryparse(Int64, move_vec[1]), tryparse(Int64, move_vec[2]), tryparse(Int64, move_vec[3]), tryparse(Int64, move_vec[4])
+                if board_xidx !== nothing  && board_yidx !== nothing && xloc !== nothing && yloc !== nothing
+                    break
+                end
             end
             println()
             print("Please enter your move in the form of \"int,int,int,int\" \"1,1,1,1\": ")

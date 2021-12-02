@@ -5,9 +5,11 @@ mutable struct UTicTacToe
     current_player::Int64 # 1 or -1
     ttt_boards_x::Int64 # designated x ultimate board idx
     ttt_boards_y::Int64 # designated y board idx
+    previous_move::Tuple{Int64, Int64, Int64, Int64}
 end
 
-function take_turn(uttt::UTicTacToe, a) 
+function take_turn(uttt::UTicTacToe, a::Tuple{Int64, Int64, Int64, Int64}) 
+    uttt.previous_move = a
     board_xidx, board_yidx, xloc, yloc = a[1], a[2], a[3], a[4]
 
     # should make sure to update designated board idx
@@ -56,16 +58,20 @@ function u_valid_moves(uttt::UTicTacToe)
 end
 
 function display_board(uttt::UTicTacToe)
-    for  j=1:9, i=1:9
+    for j=1:9, i=1:9
         xloc = (i-1) ÷ 3 + 1
         yloc = (j-1) ÷ 3 + 1
         inner_xloc = (i-1) % 3 + 1
         inner_yloc = (j-1) % 3 + 1
         inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
         if (inner_board_val == 1)
-            print(" X ")
+            printstyled(" X "; color = :light_blue)
         elseif (inner_board_val == -1)
-            print(" O ")
+            if uttt.previous_move == (xloc, yloc, inner_xloc, inner_yloc)
+                printstyled(" O "; color = :light_red)
+            else
+                printstyled(" O "; color = :light_magenta)
+            end
         else
             print("   ")
         end

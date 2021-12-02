@@ -1,3 +1,4 @@
+#using BSON
 include("../games/utictactoe.jl")
 
 function U(game, player)
@@ -11,8 +12,6 @@ function U(game, player)
     currently evaluates the global positions 
 
     """
-    # println()
-    # println("===============")
     game_winner = u_has_won(game)
     if (game_winner == player)
         return Inf
@@ -26,29 +25,15 @@ function U(game, player)
     macro_uttt_state = [[0, 0, 0] [0, 0, 0] [0, 0, 0]]
 
     for i = 1:3, j = 1:3
-        board_winner = has_won(game.ttt_boards[i,j].board)
-        board_u = 0
-        if (board_winner != 0) 
-            board_u += w[i, j] * 15 * board_winner
-            macro_uttt_state[i, j] = board_winner
-        else 
-            board_u += w[i, j] * eval_ttt_board_global(game.ttt_boards[i,j].board, 1)
-            board_u -= w[i, j] * eval_ttt_board_global(game.ttt_boards[i,j].board, -1)
-            board_u += w[i, j] * eval_ttt_board_opposites(game.ttt_boards[i, j].board, 1)
-            board_u -= w[i, j] * eval_ttt_board_opposites(game.ttt_boards[i, j].board, -1)
-        end
-        u += board_u
-        # println("DEBUG: Utility for board " * string(i) * ", " * string(j) * " :" * string(board_u))
+        u += w[i, j] * ttt_util_dict[game.ttt_boards[i,j].board]
+        macro_uttt_state[i, j] = has_won(game.ttt_boards[i,j].board)
     end
-    u += eval_ttt_board_opposites(macro_uttt_state, 1)
-    u -= eval_ttt_board_opposites(macro_uttt_state, -1)
+    
+    u += 2 * ttt_util_dict[macro_uttt_state]
 
     # adjusts for if the player is the -1 player
     # does nothing if the player is the 1 player
     u *= player
-    # println("DEBUG: Utility for the following game from player " * string(player) * "'s perspective: " * string(u))
-    # display_board(game)
-    # println()
 
     if game.ttt_boards_x == -1 # if free board choice
         if game.current_player == player
@@ -112,3 +97,39 @@ function eval_ttt_board_opposites(board, player)
     end
     return opposite_score
 end
+
+
+function precompute_ttt_heuristics()
+    w = [[2, 1, 2] [1, 3, 1] [2, 1, 2]]
+    dict = Dict{Matrix{Int64}, Int64}()
+    for i in 1:(3^9)
+        board = zeros(Int64, 3, 3)
+        c = i
+        for j in 1:9
+            mark = 0
+            if c%3 == 1
+                mark = 1
+            elseif c%3 == 2
+                mark = -1
+            end
+            board[(j-1) ÷ 3 + 1, (j-1) % 3 + 1] = mark
+            c ÷= 3
+        end
+        board_winner = has_won(board)
+        board_u = 0
+        if (board_winner != 0) 
+            #board_u += w[i, j] * 15 * board_winner # REMOVED w[i,j], WILL HAVE TO INCLUDE THAT OUTSIDE DICT
+            board_u += 15 * board_winner
+            #macro_uttt_state[i, j] = board_winner
+        else 
+            board_u += eval_ttt_board_global(board, 1)
+            board_u -= eval_ttt_board_global(board, -1)
+            board_u += eval_ttt_board_opposites(board, 1)
+            board_u -= eval_ttt_board_opposites(board, -1)
+        end
+        dict[board] = board_u
+    end
+    return dict
+end
+
+ttt_util_dict = precompute_ttt_heuristics()
