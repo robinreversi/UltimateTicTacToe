@@ -29,7 +29,7 @@ function U(game, player)
         macro_uttt_state[i, j] = has_won(game.ttt_boards[i,j].board)
     end
     
-    u += 2 * ttt_util_dict[macro_uttt_state]
+    u += 3 * ttt_util_dict[macro_uttt_state]
 
     # adjusts for if the player is the -1 player
     # does nothing if the player is the 1 player
@@ -57,45 +57,118 @@ function eval_ttt_board_global(board, player)
     return sum(broadcast(abs, player_positions) .* w)
 end
 
-function eval_ttt_board_opposites(board, player)
+function eval_ttt_board_2_in_row(board, player)
     """
-    Evaluates opposite_score on a ttt board 
-    to return a bonus for holding positions
-    that are opposite each other 
+    Evaluates a ttt board to return a bonus for holding positions
+    that "line up" a future 3-in-a-row.
     """
-    opposite_score = 0
-    if (board[1, 1] == board[3, 3] && board[1, 1] == player)
-        opposite_score += 2
+    score = 0
+
+    # Top left corner (TLC) 3-in-row setups
+    if (board[1, 1] == board[1, 2] && board[1, 1] == player && board[1,3] != -player) # TLC and LEFT
+        score += 2
     end
 
-    if (board[1, 3] == board[3, 1] && board[1, 3] == player)
-        opposite_score += 2
+    if (board[1, 1] == board[1, 3] && board[1, 1] == player && board[1,2] != -player) # TLC and BLC
+        score += 2
+    end    
+
+    if (board[1, 1] == board[2, 1] && board[1, 1] == player && board[3,1] != -player) # TLC and TOP
+        score += 2
     end
 
-    if (board[1, 1] == board[1, 3] && board[1, 1] == player)
-        opposite_score += 2
+    if (board[1, 1] == board[3, 1] && board[1, 1] == player && board[2,1] != -player) # TLC and TRC
+        score += 2
     end
 
-    if (board[1, 1] == board[3, 1] && board[1, 1] == player)
-        opposite_score += 2
+    if (board[1, 1] == board[2, 2] && board[1, 1] == player && board[3,3] != -player) # TLC and MID
+        score += 2
+    end    
+
+    if (board[1, 1] == board[3, 3] && board[1, 1] == player && board[2,2] != -player) # TLC and BRC
+        score += 2
+    end 
+
+    # Left 3-in-row setups
+    if (board[1, 2] == board[1, 3] && board[1, 2] == player && board[1,1] != -player) # LEFT and BLC
+        score += 2
     end
 
-    if (board[3, 1] == board[3, 3] && board[3, 1] == player)
-        opposite_score += 2
+    if (board[1, 2] == board[2, 2] && board[1, 2] == player && board[3,2] != -player) # LEFT and MID
+        score += 2
     end
 
-    if (board[1, 3] == board[3, 3] && board[1, 3] == player)
-        opposite_score += 2
+    if (board[1, 2] == board[3, 2] && board[1, 2] == player && board[2,2] != -player) # LEFT and RIGHT
+        score += 2
     end
 
-    if (board[2, 1] == board[2, 3] && board[2, 1] == player)
-        opposite_score += 2
+    # Bottom left corner (BLC) 3-in-row setups
+    if (board[1, 3] == board[2, 3] && board[1, 3] == player && board[3,3] != -player) # BLC and BOT
+        score += 2
     end
 
-    if (board[1, 2] == board[3, 2] && board[1, 2] == player)
-        opposite_score += 2
+    if (board[1, 3] == board[3, 3] && board[1, 3] == player && board[2,3] != -player) # BLC and BRC
+        score += 2
     end
-    return opposite_score
+
+    if (board[1, 3] == board[2, 2] && board[1, 3] == player && board[3,1] != -player) # BLC and MID
+        score += 2
+    end
+
+    if (board[1, 3] == board[3, 1] && board[1, 3] == player && board[2,2] != -player) # BLC and TRC
+        score += 2
+    end
+
+    # Top 3-in-row setups
+    if (board[2, 1] == board[2, 2] && board[2, 1] == player && board[2,3] != -player) # TOP and MID
+        score += 2
+    end
+
+    if (board[2, 1] == board[2, 3] && board[2, 1] == player && board[2,2] != -player) # TOP and BOT
+        score += 2
+    end
+
+    if (board[2, 1] == board[3, 1] && board[2, 1] == player && board[1,1] != -player) # TOP and TRC
+        score += 2
+    end
+
+    # Middle (MID) 3-in-row setups
+    if (board[2, 2] == board[2, 3] && board[2, 2] == player && board[2,1] != -player) # Mid and BOT
+        score += 2
+    end
+
+    if (board[2, 2] == board[3, 1] && board[2, 2] == player && board[1,3] != -player) # Mid and TRC
+        score += 2
+    end
+
+    if (board[2, 2] == board[3, 2] && board[2, 2] == player && board[1,2] != -player) # Mid and RIGHT
+        score += 2
+    end
+
+    if (board[2, 2] == board[3, 3] && board[2, 2] == player && board[1,1] != -player) # Mid and BRC
+        score += 2
+    end
+    
+    # Bottom (BOT) 3-in-row setups
+    if (board[2, 3] == board[3, 3] && board[2, 3] == player && board[1,3] != -player) # BOT and BRC
+        score += 2
+    end
+
+    # Top Right Corner (TRC) 3-in-row setups
+    if (board[3, 1] == board[3, 2] && board[3, 1] == player && board[3,3] != -player) # TRC and RIGHT
+        score += 2
+    end
+
+    if (board[3, 1] == board[3, 3] && board[3, 1] == player && board[3,2] != -player) # TRC and BRC
+        score += 2
+    end
+
+    # Right 3-in-row setups
+    if (board[3, 2] == board[3, 3] && board[3, 2] == player && board[3,1] != -player) # RIGHT and BRC
+        score += 2
+    end
+
+    return score
 end
 
 
@@ -118,14 +191,12 @@ function precompute_ttt_heuristics()
         board_winner = has_won(board)
         board_u = 0
         if (board_winner != 0) 
-            #board_u += w[i, j] * 15 * board_winner # REMOVED w[i,j], WILL HAVE TO INCLUDE THAT OUTSIDE DICT
             board_u += 15 * board_winner
-            #macro_uttt_state[i, j] = board_winner
         else 
             board_u += eval_ttt_board_global(board, 1)
             board_u -= eval_ttt_board_global(board, -1)
-            board_u += eval_ttt_board_opposites(board, 1)
-            board_u -= eval_ttt_board_opposites(board, -1)
+            board_u += eval_ttt_board_2_in_row(board, 1)
+            board_u -= eval_ttt_board_2_in_row(board, -1)
         end
         dict[board] = board_u
     end
