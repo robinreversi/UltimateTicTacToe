@@ -20,7 +20,7 @@ function randstep(uttt::UTicTacToe, a)
     return uttt_copy
 end
 
-function get_s(uttt::UTicTacToe)
+function create_9x9_board(uttt::UTicTacToe)
     uttt_board = zeros(Int8, (9, 9))
     for  j=1:9, i=1:9
         xloc = (i-1) ÷ 3 + 1
@@ -30,6 +30,11 @@ function get_s(uttt::UTicTacToe)
         inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
         uttt_board[i, j] = inner_board_val 
     end
+    return uttt_board
+end
+
+function get_s(uttt::UTicTacToe)
+    uttt_board = create_9x9_board(uttt)
     uttt_board *= uttt.current_player
     str_board = join(collect(Iterators.flatten(uttt_board)))
     return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
@@ -92,23 +97,46 @@ function whose_turn(uttt::UTicTacToe)
     return uttt.current_player
 end
 
-function u_valid_moves(uttt::UTicTacToe)
-    valid_mvs = [] #Array{Tuple{Int64, Int64, Int64, Int64}}[]
-    # valid_mvs = Matrix(undef, 0, 3)
-    if uttt.ttt_boards_x == -1
-        for i = 1:3, j = 1:3
-            board_valid_mvs = valid_moves(uttt.ttt_boards[i,j])
-            for move in board_valid_mvs
-                push!(valid_mvs, (i, j, move[1], move[2]))
+function add_moves_from_board(i::Int64, j::Int64, uttt::UTicTacToe, filtered_mvs::Dict{String, Tuple{Int64, Int64, Int64, Int64}})
+    board_valid_mvs = valid_moves(uttt.ttt_boards[i,j])
+    board = create_9x9_board(uttt)
+    board *= uttt.current_player
+    for move in board_valid_mvs
+        board_xidx, board_yidx, xloc, yloc = i, j, move[1], move[2]
+        a = (board_xidx, board_yidx, xloc, yloc)
+        board[xloc + 3 * (board_xidx - 1), yloc + 3 * (board_yidx - 1)] = 1
+        symmetric_states = gen_symmetric_states(board::Matrix{Int64}, xloc, yloc) 
+        match_found = false
+        for s in symmetric_states
+            if (haskey(filtered_mvs, s))
+                match_found = true
+                break
             end
         end
-    else 
-        board_valid_mvs = valid_moves(uttt.ttt_boards[uttt.ttt_boards_x, uttt.ttt_boards_y])
-        for move in board_valid_mvs
-            push!(valid_mvs, (uttt.ttt_boards_x, uttt.ttt_boards_y, move[1], move[2]))
+        if (!match_found)
+            filtered_mvs[first(symmetric_states)] = a
         end
+        board[xloc + 3 * (board_xidx - 1), yloc + 3 * (board_yidx - 1)] = 0
     end
-    return valid_mvs
+end
+
+function u_valid_moves(uttt::UTicTacToe)
+    """
+    We filter the non-unique moves out to reduce the search space
+    + save memory. We do so by assuming each move is taken in valid moves
+    and check whether the resulting state (or any symmetric derivative) is
+    contained in the filtered move set. If none are, then we add one of the states 
+    to the filtered_mvs. Everything is done from the perspective of player 1
+    """
+    filtered_mvs = Dict{String, Tuple{Int64, Int64, Int64, Int64}}()
+    if uttt.ttt_boards_x == -1
+        for i = 1:3, j = 1:3
+            add_moves_from_board(i, j, uttt, filtered_mvs)
+        end
+    else 
+        add_moves_from_board(uttt.ttt_boards_x, uttt.ttt_boards_y, uttt, filtered_mvs)
+    end
+    return vec(collect(values(filtered_mvs)))
 end
 
 function display_board(uttt::UTicTacToe)
