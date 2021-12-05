@@ -28,9 +28,11 @@ function get_s(uttt::UTicTacToe)
         inner_xloc = (i-1) % 3 + 1
         inner_yloc = (j-1) % 3 + 1
         inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
-        uttt_board[i, j] = inner_board_val
+        uttt_board[i, j] = inner_board_val 
     end
-    return (join(collect(Iterators.flatten(uttt_board))), uttt.current_player, uttt.ttt_boards_x, uttt.ttt_boards_y)
+    uttt_board *= uttt.current_player
+    str_board = join(collect(Iterators.flatten(uttt_board)))
+    return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
 end
 
 function take_turn(uttt::UTicTacToe, a::Tuple{Int64, Int64, Int64, Int64}) 
