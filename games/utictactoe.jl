@@ -94,19 +94,19 @@ function display_board(uttt::UTicTacToe)
         inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
         if (inner_board_val == 1)
             reverse = (uttt.previous_move == (xloc, yloc, inner_xloc, inner_yloc)) # highlight previous move
-            printstyled(" X "; color = :light_blue, reverse=reverse)
+            printstyled(" X "; color = :blue, reverse=reverse)
         elseif (inner_board_val == -1)
             reverse = (uttt.previous_move == (xloc, yloc, inner_xloc, inner_yloc)) # highlight previous move
-            printstyled(" O "; color = :light_red, reverse=reverse)
+            printstyled(" O "; color = :red, reverse=reverse)
         else
             print("   ")
         end
         if inner_xloc < 3
             color = :white
             if has_won(uttt.ttt_boards[xloc, yloc].board) == 1
-                color = :light_blue
+                color = :blue
             elseif has_won(uttt.ttt_boards[xloc, yloc].board) == -1
-                color = :light_red
+                color = :red
             end
             printstyled("|"; color = color)
         elseif xloc < 3
@@ -116,25 +116,25 @@ function display_board(uttt::UTicTacToe)
             if inner_yloc < 3
                 color = :white
                 if has_won(uttt.ttt_boards[xloc-2, yloc].board) == 1
-                    color = :light_blue
+                    color = :blue
                 elseif has_won(uttt.ttt_boards[xloc-2, yloc].board) == -1
-                    color = :light_red
+                    color = :red
                 end
                 printstyled("---|---|---  ", color = color)
                 
                 color = :white
                 if has_won(uttt.ttt_boards[xloc-1, yloc].board) == 1
-                    color = :light_blue
+                    color = :blue
                 elseif has_won(uttt.ttt_boards[xloc-1, yloc].board) == -1
-                    color = :light_red
+                    color = :red
                 end
                 printstyled("---|---|---  ", color = color)
 
                 color = :white
                 if has_won(uttt.ttt_boards[xloc, yloc].board) == 1
-                    color = :light_blue
+                    color = :blue
                 elseif has_won(uttt.ttt_boards[xloc, yloc].board) == -1
-                    color = :light_red
+                    color = :red
                 end
                 printstyled("---|---|---\n", color = color)
             else
