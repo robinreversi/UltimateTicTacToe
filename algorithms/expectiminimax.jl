@@ -20,7 +20,7 @@ function expectiminimax(game::UTicTacToe, d, g, player, is_adversary)
         for a in u_valid_moves(game)
             updated_game = deepcopy(game)
             take_turn(updated_game, a)
-            new_a, next_utility = expectiminimax(updated_game, d-1, g, player, !is_adversary) # MEMOIZE!
+            new_a, next_utility = expectiminimax(updated_game, d, g, player, !is_adversary)
             r = U(updated_game, player)
             u = r + g * next_utility
             if (u <= worst.u)
