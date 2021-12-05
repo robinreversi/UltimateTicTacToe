@@ -35,6 +35,30 @@ function get_s(uttt::UTicTacToe)
     return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
 end
 
+function gen_symmetric_states(board::Matrix{Int64}, x::Int64, y::Int64) 
+    symmetric_states = Set{String}()
+    pos = zeros(Int64, 3, 3)
+    if (x != -1)
+        pos[x, y] = 1
+    end
+
+    for i in 1:4
+        rotated_board = board
+        rotated_pos = pos
+        for j in 1:i
+            rotated_board = rotr90(rotated_board)
+            rotated_pos = rotr90(rotated_pos)
+        end
+        new_pos = (-1, -1)
+        if (x != -1)
+            new_pos = findall(val->val==1, rotated_pos)[1]
+        end
+        rotated_state = join(collect(Iterators.flatten(rotated_board))) * string(new_pos[1]) * string(new_pos[2])
+        push!(symmetric_states, rotated_state)
+    end
+    return symmetric_states
+end
+
 function take_turn(uttt::UTicTacToe, a::Tuple{Int64, Int64, Int64, Int64}) 
     uttt.previous_move = a
     board_xidx, board_yidx, xloc, yloc = a[1], a[2], a[3], a[4]
