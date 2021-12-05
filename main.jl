@@ -48,15 +48,15 @@ function setup(algorithm, ARGS)
     return algo, game
 end
 
-function print_game_info(game::UTicTacToe, a::Union{Tuple{Int64, Int64, Int64, Int64}, Nothing})
+function move_prompt_text(game::UTicTacToe, move::Union{Tuple{Int64, Int64, Int64, Int64}, Nothing})
     run(`clear`)
     println("Current board:\n")
     display_board(game)
     println()
 
-    if a !== nothing
-        print("The computer's last move was: ")
-        println(a)
+    if move !== nothing
+        print("The bot's last move was: ")
+        println(move)
     end
 
     if game.ttt_boards_x != -1
@@ -64,6 +64,27 @@ function print_game_info(game::UTicTacToe, a::Union{Tuple{Int64, Int64, Int64, I
     end
     println()
 end
+
+function waiting_text(game::UTicTacToe, move::Union{Tuple{Int64, Int64, Int64, Int64}, Nothing})
+    run(`clear`)
+    println("Current board:\n")
+    display_board(game)
+    println()
+
+    if move !== nothing
+        print("Your move was: ")
+        println(move)
+    end
+
+    if game.ttt_boards_x != -1
+        println("The bot must play in TicTacToe board $(game.ttt_boards_x), $(game.ttt_boards_y)")
+    end
+
+    println("\nPlease wait while the bot is determining it's next move.")
+
+end
+
+
 
 function get_player_move(game::UTicTacToe)
     print("Your move is: ")
@@ -95,24 +116,19 @@ end
 
 function main(algorithm, ARGS)
     algo, game = setup(algorithm, ARGS)
-    # while(u_has_won(game) == 0 && !isempty(u_valid_moves(game)))
-    #     a = choose_action(game, algo)
-    #     take_turn(game, a)
-    #     display_board(game)
-    #     println()
-    # end
-    computers_turn = false
-    a = nothing
+    bots_turn = false
+    move = nothing
     while(u_has_won(game) == 0 && !isempty(u_valid_moves(game)))
-        if computers_turn == false
-            print_game_info(game, a)
+        if bots_turn == false
+            move_prompt_text(game, move)
             move = get_player_move(game)
             take_turn(game, move)
-            computers_turn = true
+            waiting_text(game, move)
+            bots_turn = true
         else
-            a = choose_action(game, algo)
-            take_turn(game, a)
-            computers_turn = false
+            move = choose_action(game, algo)
+            take_turn(game, move)
+            bots_turn = false
         end
     end
     run(`clear`)

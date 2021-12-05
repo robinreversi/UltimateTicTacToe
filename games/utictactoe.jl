@@ -93,13 +93,11 @@ function display_board(uttt::UTicTacToe)
         inner_yloc = (j-1) % 3 + 1
         inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
         if (inner_board_val == 1)
-            printstyled(" X "; color = :light_blue)
+            reverse = (uttt.previous_move == (xloc, yloc, inner_xloc, inner_yloc)) # highlight previous move
+            printstyled(" X "; color = :light_blue, reverse=reverse)
         elseif (inner_board_val == -1)
-            color = :light_magenta
-            if uttt.previous_move == (xloc, yloc, inner_xloc, inner_yloc) # highlight previous move
-                color = :light_red
-            end
-            printstyled(" O "; color = color)
+            reverse = (uttt.previous_move == (xloc, yloc, inner_xloc, inner_yloc)) # highlight previous move
+            printstyled(" O "; color = :light_red, reverse=reverse)
         else
             print("   ")
         end
@@ -108,7 +106,7 @@ function display_board(uttt::UTicTacToe)
             if has_won(uttt.ttt_boards[xloc, yloc].board) == 1
                 color = :light_blue
             elseif has_won(uttt.ttt_boards[xloc, yloc].board) == -1
-                color = :light_magenta
+                color = :light_red
             end
             printstyled("|"; color = color)
         elseif xloc < 3
@@ -120,7 +118,7 @@ function display_board(uttt::UTicTacToe)
                 if has_won(uttt.ttt_boards[xloc-2, yloc].board) == 1
                     color = :light_blue
                 elseif has_won(uttt.ttt_boards[xloc-2, yloc].board) == -1
-                    color = :light_magenta
+                    color = :light_red
                 end
                 printstyled("---|---|---  ", color = color)
                 
@@ -128,7 +126,7 @@ function display_board(uttt::UTicTacToe)
                 if has_won(uttt.ttt_boards[xloc-1, yloc].board) == 1
                     color = :light_blue
                 elseif has_won(uttt.ttt_boards[xloc-1, yloc].board) == -1
-                    color = :light_magenta
+                    color = :light_red
                 end
                 printstyled("---|---|---  ", color = color)
 
@@ -136,10 +134,9 @@ function display_board(uttt::UTicTacToe)
                 if has_won(uttt.ttt_boards[xloc, yloc].board) == 1
                     color = :light_blue
                 elseif has_won(uttt.ttt_boards[xloc, yloc].board) == -1
-                    color = :light_magenta
+                    color = :light_red
                 end
                 printstyled("---|---|---\n", color = color)
-                #print("---|---|---  ---|---|---  ---|---|---\n")
             else
                 print("\n")
             end
