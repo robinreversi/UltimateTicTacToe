@@ -1,3 +1,4 @@
+using LinearAlgebra
 
 include("tictactoe.jl")
 using Base.Iterators
@@ -22,6 +23,7 @@ function randstep(uttt::UTicTacToe, a)
     return uttt_copy
 end
 
+
 function create_9x9_board(uttt::UTicTacToe)
     uttt_board = zeros(Int8, (9, 9))
     for  j=1:9, i=1:9
@@ -43,28 +45,129 @@ function get_s(uttt::UTicTacToe)
     return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
 end
 
-function fix_orientation(board::Matrix{Int64})
+function to_bot_orientation(board::Matrix{Int64})
+    # I: 1
+    # R: 2
+    # RR: 3
+    # RRR: 4
+    # H: 5
+    # RH: 6
+    # RRH: 7
+    # RRRH: 8
+
+    # I
     best_score = sum(board .* ORIENTATION_MATRIX)
     best_board = board
-    for i in 1:4
-        rotated_board = board
-        for j in 1:i
-            rotated_board = rotr90(rotated_board)
-        end
-        rotate_score = sum(rotated_board .* ORIENTATION_MATRIX)
-        if (rotate_score < best_score)
-            best_score = rotate_score
-            best_board = rotated_board
-        end
+    transform_idx = 1 
 
-        flipped_board = reverse(rotated_board, dims=1)
-        flipped_score = sum(flipped_board .* ORIENTATION_MATRIX)
-        if (flipped_score < best_score)
-            best_score = flipped_score
-            best_board = flipped_board
+    # R, RR, RRR
+    rotated_board = board
+    for i in 2:4 
+        rotated_board = rotr90(rotated_board)
+        score = sum(rotated_board .* ORIENTATION_MATRIX)
+        if (score < best_score) 
+            best_score = score 
+            best_board = rotated_board 
+            transform_idx = i 
         end
     end
-    return best_board
+
+    # H
+    rotated_board = reverse(board, dims=1)
+    score = sum(rotated_board .* ORIENTATION_MATRIX)
+    if (score < best_score)
+        best_score = score 
+        best_board = rotated_board
+        transform_idx = 5 
+    end
+
+    # RH = HL, RRH = HLL, RRRH (LH) = HLLL (HR) (a = rand(9,9); b = reverse(rotr90(rotr90(rotr90(a))),dims=1); c = rotl90(rotl90(rotl90(reverse(a, dims=1)))) )
+    for i in 6:8 
+        rotated_board = rotl90(rotated_board) 
+        score = sum(rotated_board .* ORIENTATION_MATRIX)
+        if (score < best_score) 
+            best_score = score; 
+            best_board = rotated_board; 
+            transform_idx = i 
+        end
+    end
+
+    return best_board, transform_idx
+end
+
+function to_player_orientation(board::Matrix{Int64}, transform_idx::Int64)
+    if transform_idx == 1 # I
+        return board
+    elseif transform_idx == 2 # R
+        return rotl90(board)
+    elseif transform_idx == 3 # RR
+        return rot180(board)
+    elseif transform_idx == 4 # RRR
+        return rotr90(board)
+    elseif transform_idx == 5 # H
+        return reverse(board, dims=1)
+    elseif transform_idx == 6 # RH
+        return rotl90(reverse(board, dims=1))
+    elseif transform_idx == 7 # RRH
+        return rot180(reverse(board, dims=1))
+    else # RRRH
+        return rotr90(reverse(board, dims=1))
+    end
+end
+
+function to_bot_move(a::Tuple{Int64, Int64, Int64, Int64}, transform_idx::Int64)
+    if transform_idx == 1 # I
+        return a
+    end
+    
+    # Get equivalent 9x9 placement of a (the move)
+    i = (a[1]-1) * 3 + a[3]
+    j = (a[2]-1) * 3 + a[4]
+
+    transform_mat = [0 1; -1 0] # R
+    if transform_idx == 3 # RR
+        transform_mat = [-1 0; 0 -1]
+    elseif transform_idx == 4 # RRR
+        transform_mat = [0 -1; 1 0]
+    elseif transform_idx == 5 # H
+        transform_mat = [-1 0; 0 1]
+    elseif transform_idx == 6 # RH
+        transform_mat = [0 1; 1 0]
+    elseif transform_idx == 7 # RRH
+        transform_mat = [1 0; 0 -1]
+    elseif transform_idx == 8 # RRRH
+        transform_mat = [0 -1; -1 0]
+    end
+
+    # Convert coordinates to distance vector from center (5,5)
+    vec = [i - 5 j-5]
+
+    transformed_vec = vec * transform_mat
+
+    # Convert from distance vector to coordinates
+    transformed_i = transformed_vec[1] + 5
+    transformed_j = transformed_vec[2] + 5
+    return nine_by_nine_to_4_tuple(transformed_i, transformed_j)
+end
+
+function to_player_move(a::Tuple{Int64, Int64, Int64, Int64}, transform_idx::Int64) # undoing the transform performed by transform_idx
+    if transform_idx == 1 # I needs I    
+        return a
+    elseif transform_idx == 2 # R needs L (RRR)
+        return(to_bot_move(a, 4))
+    elseif transform_idx == 3 # RR needs LL (or RR)
+        return(to_bot_move(a, 3))
+    elseif transform_idx == 4 # RRR needs R
+        return(to_bot_move(a, 2))
+    elseif transform_idx == 5 # H needs H
+        return(to_bot_move(a, 5))
+    elseif transform_idx == 6 # RH needs HL = RH
+        return(to_bot_move(a, 6))
+    elseif transform_idx == 7 # RRH needs HLL = RRH
+        return(to_bot_move(a, 7))
+    else # RRRH needs HLLL = RRRH
+        return(to_bot_move(a, 8))
+    end
 end
 
 function gen_symmetric_states(board::Matrix{Int64}, x::Int64, y::Int64) 
@@ -174,12 +277,17 @@ function u_valid_moves(uttt::UTicTacToe)
     return vec(collect(values(filtered_mvs)))
 end
 
+function nine_by_nine_to_4_tuple(i::Int64, j::Int64)
+    xloc = (i-1) ÷ 3 + 1
+    yloc = (j-1) ÷ 3 + 1
+    inner_xloc = (i-1) % 3 + 1
+    inner_yloc = (j-1) % 3 + 1
+    return xloc, yloc, inner_xloc, inner_yloc
+end
+
 function display_board(uttt::UTicTacToe)
     for j=1:9, i=1:9
-        xloc = (i-1) ÷ 3 + 1
-        yloc = (j-1) ÷ 3 + 1
-        inner_xloc = (i-1) % 3 + 1
-        inner_yloc = (j-1) % 3 + 1
+        xloc, yloc, inner_xloc, inner_yloc = nine_by_nine_to_4_tuple(i,j)
         inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
         if (inner_board_val == 1)
             reverse = (uttt.previous_move == (xloc, yloc, inner_xloc, inner_yloc)) # highlight previous move
