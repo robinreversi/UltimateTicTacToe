@@ -17,28 +17,32 @@ end
 function choose_action(game::UTicTacToe, algo::MonteCarloTreeSearch)
     board = create_9x9_board(game)
     bot_board, transform_idx = to_bot_orientation(board)
-    println("TRANSFORM IDX: ", transform_idx)
-    display(board)
-    display(bot_board)
-    println("orig ttt_boards_x, y: ", game.ttt_boards_x, " ", game.ttt_boards_y)
+    # println("TRANSFORM IDX: ", transform_idx)
+    # println("PLAYER BOARD: ")
+    # display(board)
+    # println("BOT BOARD: ")
+    # display(bot_board)
+    # println("orig ttt_boards_x, y: ", game.ttt_boards_x, " ", game.ttt_boards_y)
     ttt_boards = create_ttt_boards(bot_board)
     bot_boards_x, bot_boards_y = Int8(-1), Int8(-1)
     if (game.ttt_boards_x != - 1)
-        bot_boards_y, bot_boards_x, _, _ = to_bot_move((game.ttt_boards_x, game.ttt_boards_y, Int8(2), Int8(2)), transform_idx)
+        bot_boards_x, bot_boards_y, _, _ = to_bot_move((game.ttt_boards_x, game.ttt_boards_y, Int8(2), Int8(2)), transform_idx)
     end
-    println("bot boards x, y: ", bot_boards_x, " ", bot_boards_y)
+    # println("bot boards x, y: ", bot_boards_x, " ", bot_boards_y)
     bot_prev_move = to_bot_move(game.previous_move, transform_idx)
     bot_game = UTicTacToe(ttt_boards, game.current_player, bot_boards_x, bot_boards_y, bot_prev_move)
-
+    
     for k in 1:algo.m
         simulate!(bot_game, algo, game.current_player)
     end
     valid_mvs = u_valid_moves(bot_game)
-    display_board(game)
-    display_board(bot_game)
+    # println("PLAYER BOARD: ")
+    # display_board(game)
+    # println("BOT BOARD: ")
+    # display_board(bot_game)
     a = argmax(a->algo.Q[compress_s_a(get_s(bot_game), a)], valid_mvs)
-    println("ACTION: ", a)
-    println()
+    # println("ACTION: ", a)
+    # println()
     return to_player_move(a, transform_idx)
 end 
 

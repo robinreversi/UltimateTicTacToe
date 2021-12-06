@@ -34,7 +34,7 @@ end
 function create_9x9_board(uttt::UTicTacToe)
     uttt_board = zeros(Int8, (9, 9))
     for  j=1:9, i=1:9
-        xloc, yloc, inner_xloc, inner_yloc = nine_by_nine_to_4_tuple(Int8(i),Int8(j))
+        yloc, xloc, inner_yloc, inner_xloc = nine_by_nine_to_4_tuple(Int8(i),Int8(j))
         inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
         uttt_board[i, j] = inner_board_val 
     end
@@ -44,8 +44,8 @@ end
 function create_ttt_boards(uttt_board::Matrix{Int8})
     ttt_boards = [TicTacToe(zeros(Int8, 3, 3)) for i = 1:3, j = 1:3]
     for  j=1:9, i=1:9
-        xloc, yloc, inner_xloc, inner_yloc = nine_by_nine_to_4_tuple(Int8(i),Int8(j))
-        ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc] = uttt_board[j, i]
+        yloc, xloc, inner_yloc, inner_xloc = nine_by_nine_to_4_tuple(Int8(i),Int8(j))
+        ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc] = uttt_board[i, j]
     end
     return ttt_boards
 end
@@ -85,7 +85,7 @@ function to_bot_orientation(board::Matrix{Int8})
     end
 
     # H
-    rotated_board = reverse(board, dims=1)
+    rotated_board = reverse(board, dims=2)
     score = sum(rotated_board .* ORIENTATION_MATRIX)
     if (score < best_score)
         best_score = score 
@@ -117,13 +117,13 @@ function to_player_orientation(board::Matrix{Int8}, transform_idx::Int8)
     elseif transform_idx == 4 # RRR
         return rotr90(board)
     elseif transform_idx == 5 # H
-        return reverse(board, dims=1)
+        return reverse(board, dims=2)
     elseif transform_idx == 6 # RH
-        return rotl90(reverse(board, dims=1))
+        return rotl90(reverse(board, dims=2))
     elseif transform_idx == 7 # RRH
-        return rot180(reverse(board, dims=1))
+        return rot180(reverse(board, dims=2))
     else # RRRH
-        return rotr90(reverse(board, dims=1))
+        return rotr90(reverse(board, dims=2))
     end
 end
 
@@ -202,8 +202,8 @@ function gen_symmetric_states(board::Matrix{Int8}, x::Int8, y::Int8)
         end
         rotated_state = join(collect(Iterators.flatten(rotated_board))) * string(new_pos[1]) * string(new_pos[2])
         
-        flipped_board = reverse(rotated_board, dims=1)
-        flipped_pos = reverse(rotated_pos, dims=1)
+        flipped_board = reverse(rotated_board, dims=2)
+        flipped_pos = reverse(rotated_pos, dims=2)
         if (x != -1)
             new_pos = findall(val->val==1, flipped_pos)[1]
         end
