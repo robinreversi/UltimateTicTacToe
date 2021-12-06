@@ -22,40 +22,23 @@ function get_s(uttt::UTicTacToe)
 end
 
 function choose_action(game::UTicTacToe, algo::MonteCarloTreeSearch)
-    # Create 9x9 board from 9 3x3 boards to find symmetries
-    board = create_9x9_board(game)
-
-    # Convert board view to bot's board view
-    bot_board, transform_idx = to_bot_orientation(board)
-
-    # Create 9 3x3 boards from newly trasnformed 9x9 board
-    ttt_boards = create_ttt_boards(bot_board)
-
-    # Determine remaining UTicTacToe information
-    bot_boards_x, bot_boards_y = Int8(-1), Int8(-1)
-    if (game.ttt_boards_x != - 1)
-        bot_boards_x, bot_boards_y, _, _ = to_bot_move((game.ttt_boards_x, game.ttt_boards_y, Int8(2), Int8(2)), transform_idx)
-    end
-    bot_prev_move = to_bot_move(game.previous_move, transform_idx)
-
-    # Create bot_game
-    bot_game = UTicTacToe(ttt_boards, game.current_player, bot_boards_x, bot_boards_y, bot_prev_move)
+    bot_game, transform_idx = setup_bot_game(game)
     
     for k in 1:algo.m
         simulate!(bot_game, algo, game.current_player)
     end
-    valid_mvs = u_valid_moves(bot_game)
+    valid_mvs = u_valid_moves_unique(bot_game)
     a = argmax(a->algo.Q[compress_s_a(get_s(bot_game), a)], valid_mvs)
     return to_player_move(a, transform_idx)
 end 
 
 function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.d)
-    if (algo.d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves(game)))
-        return randomized_rollout(game, player)
+    if (algo.d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves_unique(game)))
+        return U(game, player)
     end
 
     s = get_s(game)
-    valid_mvs = u_valid_moves(game)
+    valid_mvs = u_valid_moves_unique(game)
     
     if (!haskey(algo.N, compress_s_a(s, first(valid_mvs))))
         for a in valid_mvs
@@ -92,7 +75,7 @@ function train(d::Int8, m::Int8, c::Float64, γ::Float64, num_games::Int64, save
     for i in ProgressBar(1:num_games)
         ttt_boards = [TicTacToe(zeros(Int64, 3, 3)) for i = 1:3, j = 1:3]
         game = UTicTacToe(ttt_boards, 1, -1, -1, (-1, -1, -1, -1))
-        while(u_has_won(game) == 0 && !isempty(u_valid_moves(game)))
+        while(u_has_won(game) == 0 && !isempty(u_valid_moves_unique(game)))
             a = choose_action(game, mcts)
             take_turn(game, a)
         end

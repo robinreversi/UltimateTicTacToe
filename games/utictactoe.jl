@@ -15,8 +15,8 @@ const ORIENTATION_MATRIX = transpose(reshape(collect(1:81), 9,9))
 function randstep(uttt::UTicTacToe, a)
     uttt_copy = deepcopy(uttt)
     take_turn(uttt_copy, a)
-    next_valid_mvs = u_valid_moves(uttt_copy)
-    if (u_has_won(uttt_copy) == 0 && !isempty(next_valid_mvs))
+    next_valid_mvs = u_valid_moves_all(uttt_copy)
+    if (u_has_won(uttt) == 0 && !isempty(next_valid_mvs))
         rand_move = rand(next_valid_mvs)
         take_turn(uttt_copy, rand_move)
     end
@@ -68,8 +68,6 @@ function create_ttt_boards(uttt_board::Matrix{Int8})
     return ttt_boards
 end
 
-
-
 function to_bot_orientation(board::Matrix{Int8})
     # I: 1
     # R: 2
@@ -118,26 +116,6 @@ function to_bot_orientation(board::Matrix{Int8})
     end
 
     return best_board, transform_idx
-end
-
-function to_player_orientation(board::Matrix{Int8}, transform_idx::Int8)
-    if transform_idx == 1 # I
-        return board
-    elseif transform_idx == 2 # R
-        return rotl90(board)
-    elseif transform_idx == 3 # RR
-        return rot180(board)
-    elseif transform_idx == 4 # RRR
-        return rotr90(board)
-    elseif transform_idx == 5 # H
-        return reverse(board, dims=2)
-    elseif transform_idx == 6 # RH
-        return rotl90(reverse(board, dims=2))
-    elseif transform_idx == 7 # RRH
-        return rot180(reverse(board, dims=2))
-    else # RRRH
-        return rotr90(reverse(board, dims=2))
-    end
 end
 
 function to_bot_move(a::Tuple{Int8, Int8, Int8, Int8}, transform_idx::Int8)
@@ -195,6 +173,28 @@ function to_player_move(a::Tuple{Int8, Int8, Int8, Int8}, transform_idx::Int8) #
     end
 end
 
+function setup_bot_game(game::UTicTacToe)
+    # Create 9x9 board from 9 3x3 boards to find symmetries
+    board = create_9x9_board(game)
+
+    # Convert board view to bot's board view
+    bot_board, transform_idx = to_bot_orientation(board)
+
+    # Create 9 3x3 boards from newly trasnformed 9x9 board
+    ttt_boards = create_ttt_boards(bot_board)
+
+    # Determine remaining UTicTacToe information
+    bot_boards_x, bot_boards_y = Int8(-1), Int8(-1)
+    if (game.ttt_boards_x != - 1)
+        bot_boards_x, bot_boards_y, _, _ = to_bot_move((game.ttt_boards_x, game.ttt_boards_y, Int8(2), Int8(2)), transform_idx)
+    end
+    bot_prev_move = to_bot_move(game.previous_move, transform_idx)
+
+    # Create bot_game
+    bot_game = UTicTacToe(ttt_boards, game.current_player, bot_boards_x, bot_boards_y, bot_prev_move)
+    return bot_game, transform_idx
+end
+
 function gen_symmetric_states(board::Matrix{Int8}, x::Int8, y::Int8) 
     symmetric_states = Set{String}()
     pos = zeros(Int8, 3, 3)
@@ -235,7 +235,7 @@ function take_turn(uttt::UTicTacToe, a::Tuple{Int8, Int8, Int8, Int8})
     if has_won(uttt.ttt_boards[xloc,yloc].board) == 0
         uttt.ttt_boards_x = xloc
         uttt.ttt_boards_y = yloc
-        if isempty(u_valid_moves(uttt))
+        if isempty(u_valid_moves_all(uttt))
             uttt.ttt_boards_x = -1
             uttt.ttt_boards_y = -1
         end
@@ -283,7 +283,7 @@ function add_moves_from_board(i::Int8, j::Int8, uttt::UTicTacToe, filtered_mvs::
     end
 end
 
-function u_valid_moves(uttt::UTicTacToe)
+function u_valid_moves_unique(uttt::UTicTacToe)
     """
     We filter the non-unique moves out to reduce the search space
     + save memory. We do so by assuming each move is taken in valid moves
@@ -301,6 +301,24 @@ function u_valid_moves(uttt::UTicTacToe)
         add_moves_from_board(uttt.ttt_boards_x, uttt.ttt_boards_y, uttt, filtered_mvs)
     end
     return vec(collect(values(filtered_mvs)))
+end
+
+function u_valid_moves_all(uttt::UTicTacToe)
+    valid_mvs = [] 
+    if uttt.ttt_boards_x == -1
+        for i::Int8 = 1:3, j::Int8 = 1:3
+            board_valid_mvs = valid_moves(uttt.ttt_boards[i,j])
+            for move in board_valid_mvs
+                push!(valid_mvs, (i, j, Int8(move[1]), Int8(move[2])))
+            end
+        end
+    else 
+        board_valid_mvs = valid_moves(uttt.ttt_boards[uttt.ttt_boards_x, uttt.ttt_boards_y])
+        for move in board_valid_mvs
+            push!(valid_mvs, (uttt.ttt_boards_x, uttt.ttt_boards_y, Int8(move[1]), Int8(move[2])))
+        end
+    end
+    return valid_mvs
 end
 
 function display_board(uttt::UTicTacToe)
