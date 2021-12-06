@@ -54,7 +54,7 @@ function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.
         return U(game, player)
     end
 
-    #s = get_s(game)
+    s = get_s(game)
     valid_mvs = u_valid_moves(game)
     
     if (!haskey(algo.N, compress_s_a(s, first(valid_mvs))))
