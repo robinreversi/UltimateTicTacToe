@@ -112,7 +112,8 @@ function get_player_move(game::UTicTacToe)
         end
 
         move = (board_xidx, board_yidx, xloc, yloc)
-        valid_mvs = u_valid_moves(game)
+
+        valid_mvs = u_valid_moves_all(game)
         for a in valid_mvs
             if move == a
                 return move
@@ -127,7 +128,7 @@ function main(algorithm, ARGS)
     algo, game = setup(algorithm, ARGS)
     bots_turn = false
     move = nothing
-    while(u_has_won(game) == 0 && !isempty(u_valid_moves(game)))
+    while(u_has_won(game) == 0 && !isempty(u_valid_moves_all(game)))
         if bots_turn == false
             move_prompt_text(game, move)
             move = get_player_move(game)

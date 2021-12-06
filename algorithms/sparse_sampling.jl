@@ -8,23 +8,24 @@ struct SparseSampling
 end
 
 function choose_action(game::UTicTacToe, algo::SparseSampling) 
-    best = choose_action_helper(game, algo.d, algo.m, algo.g, game.current_player)
-    return best.a
+    bot_game, transform_idx = setup_bot_game(game)
+    best = simulate!(bot_game, algo.d, algo.m, algo.g, bot_game.current_player)
+    return to_player_move(best.a, transform_idx)
 end
 
-function choose_action_helper(game::UTicTacToe, d, m, g, player)
-    if (d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves(game)))
+function simulate!(game::UTicTacToe, d, m, g, player)
+    if (d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves_unique(game)))
         return (a=nothing, u=U(game, player))
     end
     best = (a=nothing, u=-Inf)
-    valid_moves = u_valid_moves(game)
+    valid_moves = u_valid_moves_unique(game)
     for a in valid_moves
         u = 0.0
         for i in 1:m
             updated_game = randstep(game, a)
             r = U(updated_game, player)
             next_utility = 0
-            new_a, next_utility = choose_action_helper(updated_game, d-1, m, g, player)
+            new_a, next_utility = simulate!(updated_game, d-1, m, g, player)
             u += (r + g * next_utility) / m
         end
         if (u >= best.u)

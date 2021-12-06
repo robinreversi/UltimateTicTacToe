@@ -7,8 +7,9 @@ struct ExpectiMiniMax
 end
 
 function choose_action(game::UTicTacToe, algo::ExpectiMiniMax)
-    best = expectiminimax(game, algo.d, algo.g, game.current_player, false)
-    return best.a
+    bot_game, transform_idx = setup_bot_game(game)
+    best = expectiminimax(bot_game, algo.d, algo.g, bot_game.current_player, false)
+    return to_player_move(best.a, transform_idx)
 end
 
 function expectiminimax(game::UTicTacToe, d, g, player, is_adversary)
@@ -17,7 +18,7 @@ function expectiminimax(game::UTicTacToe, d, g, player, is_adversary)
     end
     if (is_adversary)
         worst = (a=nothing, u=Inf)
-        for a in u_valid_moves(game)
+        for a in u_valid_moves_unique(game)
             updated_game = deepcopy(game)
             take_turn(updated_game, a)
             new_a, next_utility = expectiminimax(updated_game, d, g, player, !is_adversary)
@@ -30,7 +31,7 @@ function expectiminimax(game::UTicTacToe, d, g, player, is_adversary)
         return worst
     else
         best = (a=nothing, u=-Inf)
-        for a in u_valid_moves(game)
+        for a in u_valid_moves_unique(game)
             updated_game = deepcopy(game)
             take_turn(updated_game, a)
             new_a, next_utility = expectiminimax(updated_game, d-1, g, player, !is_adversary)
