@@ -23,14 +23,18 @@ function randstep(uttt::UTicTacToe, a)
     return uttt_copy
 end
 
+function nine_by_nine_to_4_tuple(i::Int8, j::Int8)
+    xloc = (i-1) ÷ 3 + 1
+    yloc = (j-1) ÷ 3 + 1
+    inner_xloc = (i-1) % 3 + 1
+    inner_yloc = (j-1) % 3 + 1
+    return Int8(xloc), Int8(yloc), Int8(inner_xloc), Int8(inner_yloc)
+end
 
 function create_9x9_board(uttt::UTicTacToe)
     uttt_board = zeros(Int8, (9, 9))
     for  j=1:9, i=1:9
-        xloc = (i-1) ÷ 3 + 1
-        yloc = (j-1) ÷ 3 + 1
-        inner_xloc = (i-1) % 3 + 1
-        inner_yloc = (j-1) % 3 + 1
+        xloc, yloc, inner_xloc, inner_yloc = nine_by_nine_to_4_tuple(Int8(i),Int8(j))
         inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
         uttt_board[i, j] = inner_board_val 
     end
@@ -40,10 +44,7 @@ end
 function create_ttt_boards(uttt_board::Matrix{Int8})
     ttt_boards = [TicTacToe(zeros(Int8, 3, 3)) for i = 1:3, j = 1:3]
     for  j=1:9, i=1:9
-        xloc = (i-1) ÷ 3 + 1
-        yloc = (j-1) ÷ 3 + 1
-        inner_xloc = (i-1) % 3 + 1
-        inner_yloc = (j-1) % 3 + 1
+        xloc, yloc, inner_xloc, inner_yloc = nine_by_nine_to_4_tuple(Int8(i),Int8(j))
         ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc] = uttt_board[j, i]
     end
     return ttt_boards
@@ -52,7 +53,6 @@ end
 function get_s(uttt::UTicTacToe)
     uttt_board = create_9x9_board(uttt)
     uttt_board *= uttt.current_player
-    # return gen_symmetric_states(uttt_board, uttt.ttt_boards_x, uttt.ttt_boards_y)
     str_board = join(collect(Iterators.flatten(uttt_board)))
     return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
 end
@@ -152,7 +152,7 @@ function to_bot_move(a::Tuple{Int8, Int8, Int8, Int8}, transform_idx::Int8)
     end
 
     # Convert coordinates to distance vector from center (5,5)
-    vec = [i - 5 j-5]
+    vec = [i - 5 j - 5]
 
     transformed_vec = vec * transform_mat
 
@@ -288,14 +288,6 @@ function u_valid_moves(uttt::UTicTacToe)
         add_moves_from_board(uttt.ttt_boards_x, uttt.ttt_boards_y, uttt, filtered_mvs)
     end
     return vec(collect(values(filtered_mvs)))
-end
-
-function nine_by_nine_to_4_tuple(i::Int8, j::Int8)
-    xloc = (i-1) ÷ 3 + 1
-    yloc = (j-1) ÷ 3 + 1
-    inner_xloc = (i-1) % 3 + 1
-    inner_yloc = (j-1) % 3 + 1
-    return Int8(xloc), Int8(yloc), Int8(inner_xloc), Int8(inner_yloc)
 end
 
 function display_board(uttt::UTicTacToe)
