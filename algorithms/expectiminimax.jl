@@ -13,7 +13,7 @@ function choose_action(game::UTicTacToe, algo::ExpectiMiniMax)
 end
 
 function expectiminimax(game::UTicTacToe, d, g, player, is_adversary)
-    if (d <= 0)
+    if (d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves_all(game)))
         return (a=nothing, u=U(game, player))
     end
     if (is_adversary)

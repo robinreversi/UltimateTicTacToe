@@ -17,9 +17,8 @@ end
 function get_s(uttt::UTicTacToe)
     uttt_board = create_9x9_board(uttt)
     uttt_board *= uttt.current_player
-    return (uttt_board, uttt.ttt_boards_x, uttt.ttt_boards_y)
-    # str_board = join(collect(Iterators.flatten(uttt_board)))
-    # return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
+    str_board = join(collect(Iterators.flatten(uttt_board)))
+    return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
 end
 
 function choose_action(game::UTicTacToe, algo::MonteCarloTreeSearch)
@@ -34,7 +33,7 @@ function choose_action(game::UTicTacToe, algo::MonteCarloTreeSearch)
 end 
 
 function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.d)
-    if (algo.d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves_unique(game)))
+    if (algo.d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves_all(game)))
         return U(game, player)
     end
 
@@ -58,9 +57,8 @@ function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.
 end
 
 function compress_s_a(s, a)
-    return (s, a) 
-    # compressed_s = s * string(a[1]) * string(a[2]) * string(a[3]) * string(a[4])
-    # return bytes2hex(sha256(compressed_s))
+    compressed_s = s * string(a[1]) * string(a[2]) * string(a[3]) * string(a[4])
+    return bytes2hex(sha256(compressed_s))
 end
 
 bonus(Nsa, Ns) = Nsa == 0 ? Inf : sqrt(log(Ns)/Nsa)
@@ -77,7 +75,7 @@ function train(d::Int8, m::Int8, c::Float64, γ::Float64, num_games::Int64, save
     for i in ProgressBar(1:num_games)
         ttt_boards = [TicTacToe(zeros(Int64, 3, 3)) for i = 1:3, j = 1:3]
         game = UTicTacToe(ttt_boards, 1, -1, -1, (-1, -1, -1, -1))
-        while(u_has_won(game) == 0 && !isempty(u_valid_moves_unique(game)))
+        while(u_has_won(game) == 0 && !isempty(u_valid_moves_all(game)))
             a = choose_action(game, mcts)
             take_turn(game, a)
         end

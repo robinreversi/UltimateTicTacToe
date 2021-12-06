@@ -14,7 +14,7 @@ function choose_action(game::UTicTacToe, algo::SparseSampling)
 end
 
 function simulate!(game::UTicTacToe, d, m, g, player)
-    if (d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves_unique(game)))
+    if (d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves_all(game)))
         return (a=nothing, u=U(game, player))
     end
     best = (a=nothing, u=-Inf)

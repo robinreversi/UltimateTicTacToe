@@ -2,6 +2,8 @@ using LinearAlgebra
 
 include("tictactoe.jl")
 using Base.Iterators
+using Memoize
+
 mutable struct UTicTacToe
     ttt_boards::Matrix{TicTacToe}  # 3x3 array of tic tac toe boards
     current_player::Int8 # 1 or -1
@@ -25,9 +27,9 @@ end
 
 function randomized_rollout(uttt::UTicTacToe, player)
     uttt_copy = deepcopy(uttt)
-    valid_moves = u_valid_moves_unique(uttt_copy)
+    valid_moves = u_valid_moves_all(uttt_copy)
     while (u_has_won(uttt_copy) == 0 && !isempty(valid_moves))
-        valid_moves = u_valid_moves_unique(uttt_copy)
+        valid_moves = u_valid_moves_all(uttt_copy)
         if (!isempty(valid_moves))
             rand_move = rand(valid_moves)
             take_turn(uttt_copy, rand_move)
@@ -68,7 +70,7 @@ function create_ttt_boards(uttt_board::Matrix{Int8})
     return ttt_boards
 end
 
-function to_bot_orientation(board::Matrix{Int8})
+@memoize Dict function to_bot_orientation(board::Matrix{Int8})
     # I: 1
     # R: 2
     # RR: 3
@@ -118,7 +120,7 @@ function to_bot_orientation(board::Matrix{Int8})
     return best_board, transform_idx
 end
 
-function to_bot_move(a::Tuple{Int8, Int8, Int8, Int8}, transform_idx::Int8)
+@memoize Dict function to_bot_move(a::Tuple{Int8, Int8, Int8, Int8}, transform_idx::Int8)
     if transform_idx == 1 # I
         return a
     end
@@ -153,7 +155,7 @@ function to_bot_move(a::Tuple{Int8, Int8, Int8, Int8}, transform_idx::Int8)
     return nine_by_nine_to_4_tuple(Int8(transformed_i), Int8(transformed_j))
 end
 
-function to_player_move(a::Tuple{Int8, Int8, Int8, Int8}, transform_idx::Int8) # undoing the transform performed by transform_idx
+@memoize Dict function to_player_move(a::Tuple{Int8, Int8, Int8, Int8}, transform_idx::Int8) # undoing the transform performed by transform_idx
     if transform_idx == 1 # I needs I    
         return a
     elseif transform_idx == 2 # R needs L (RRR)
@@ -196,7 +198,7 @@ function setup_bot_game(game::UTicTacToe)
 end
 
 function gen_symmetric_states(board::Matrix{Int8}, x::Int8, y::Int8) 
-    symmetric_states = Set{Tuple{Matrix{Int8}, Int8, Int8}}()
+    symmetric_states = Vector{Tuple{Matrix{Int8}, Int8, Int8}}()
     pos = zeros(Int8, 3, 3)
     if (x != -1)
         pos[x, y] = 1
@@ -211,14 +213,14 @@ function gen_symmetric_states(board::Matrix{Int8}, x::Int8, y::Int8)
         end
         new_pos = (-1, -1)
         if (x != -1)
-            new_pos = findall(val->val==1, rotated_pos)[1]
+            new_pos = findfirst(val->val==1, rotated_pos)
         end
         rotated_state = (rotated_board, new_pos[1], new_pos[2])
         
         flipped_board = reverse(rotated_board, dims=2)
         flipped_pos = reverse(rotated_pos, dims=2)
         if (x != -1)
-            new_pos = findall(val->val==1, flipped_pos)[1]
+            new_pos = findfirst(val->val==1, flipped_pos)
         end
         flipped_state = (flipped_board, new_pos[1], new_pos[2])
         push!(symmetric_states, rotated_state)
