@@ -38,8 +38,8 @@ function setup(algorithm, ARGS)
         c = tryparse(Float64, ARGS[4])
         γ = tryparse(Float64, ARGS[5])
         if length(ARGS) == 6
-            N = BSON.load("mcts_states/mcts_N_game_" * ARGS[6])
-            Q = BSON.load("mcts_states/mcts_Q_game_" * ARGS[6])
+            N = BSON.load("mcts_states/rr_mcts_N_game_" * ARGS[6] * "_d" * string(d) * "_m" * string(m))
+            Q = BSON.load("mcts_states/rr_mcts_Q_game_" * ARGS[6] * "_d" * string(d) * "_m" * string(m))
             c = 0
         end
         algo = MonteCarloTreeSearch(N, Q, d, m, c, γ)

@@ -25,9 +25,9 @@ end
 
 function randomized_rollout(uttt::UTicTacToe, player)
     uttt_copy = deepcopy(uttt)
-    valid_moves = u_valid_moves(uttt_copy)
+    valid_moves = u_valid_moves_unique(uttt_copy)
     while (u_has_won(uttt_copy) == 0 && !isempty(valid_moves))
-        valid_moves = u_valid_moves(uttt_copy)
+        valid_moves = u_valid_moves_unique(uttt_copy)
         if (!isempty(valid_moves))
             rand_move = rand(valid_moves)
             take_turn(uttt_copy, rand_move)
@@ -196,7 +196,7 @@ function setup_bot_game(game::UTicTacToe)
 end
 
 function gen_symmetric_states(board::Matrix{Int8}, x::Int8, y::Int8) 
-    symmetric_states = Set{String}()
+    symmetric_states = Set{Tuple{Matrix{Int8}, Int8, Int8}}()
     pos = zeros(Int8, 3, 3)
     if (x != -1)
         pos[x, y] = 1
@@ -213,14 +213,14 @@ function gen_symmetric_states(board::Matrix{Int8}, x::Int8, y::Int8)
         if (x != -1)
             new_pos = findall(val->val==1, rotated_pos)[1]
         end
-        rotated_state = join(collect(Iterators.flatten(rotated_board))) * string(new_pos[1]) * string(new_pos[2])
+        rotated_state = (rotated_board, new_pos[1], new_pos[2])
         
         flipped_board = reverse(rotated_board, dims=2)
         flipped_pos = reverse(rotated_pos, dims=2)
         if (x != -1)
             new_pos = findall(val->val==1, flipped_pos)[1]
         end
-        flipped_state = join(collect(Iterators.flatten(flipped_board))) * string(new_pos[1]) * string(new_pos[2])
+        flipped_state = (flipped_board, new_pos[1], new_pos[2])
         push!(symmetric_states, rotated_state)
         push!(symmetric_states, flipped_state)
     end
@@ -260,7 +260,7 @@ function whose_turn(uttt::UTicTacToe)
     return uttt.current_player
 end
 
-function add_moves_from_board(i::Int8, j::Int8, uttt::UTicTacToe, filtered_mvs::Dict{String, Tuple{Int8, Int8, Int8, Int8}})
+function add_moves_from_board(i::Int8, j::Int8, uttt::UTicTacToe, filtered_mvs::Dict{Tuple{Matrix{Int8}, Int8, Int8}, Tuple{Int8, Int8, Int8, Int8}})
     board_valid_mvs = valid_moves(uttt.ttt_boards[i,j])
     board = create_9x9_board(uttt)
     board *= uttt.current_player
@@ -291,7 +291,7 @@ function u_valid_moves_unique(uttt::UTicTacToe)
     contained in the filtered move set. If none are, then we add one of the states 
     to the filtered_mvs. Everything is done from the perspective of player 1
     """
-    filtered_mvs = Dict{String, Tuple{Int8, Int8, Int8, Int8}}()
+    filtered_mvs = Dict{Tuple{Matrix{Int8}, Int8, Int8}, Tuple{Int8, Int8, Int8, Int8}}()
     
     if uttt.ttt_boards_x == -1
         for i::Int8 = 1:3, j::Int8 = 1:3
