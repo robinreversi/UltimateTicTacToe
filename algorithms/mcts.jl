@@ -41,16 +41,15 @@ function choose_action(game::UTicTacToe, algo::MonteCarloTreeSearch)
     # Create bot_game
     bot_game = UTicTacToe(ttt_boards, game.current_player, bot_boards_x, bot_boards_y, bot_prev_move)
     
-    s = get_s(bot_game)
     for k in 1:algo.m
-        simulate!(bot_game, algo, game.current_player, s)
+        simulate!(bot_game, algo, game.current_player)
     end
     valid_mvs = u_valid_moves(bot_game)
     a = argmax(a->algo.Q[compress_s_a(get_s(bot_game), a)], valid_mvs)
     return to_player_move(a, transform_idx)
 end 
 
-function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, s::String, d=algo.d)
+function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.d)
     if (algo.d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves(game)))
         return U(game, player)
     end
