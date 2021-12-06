@@ -9,6 +9,8 @@ mutable struct UTicTacToe
     previous_move::Tuple{Int64, Int64, Int64, Int64}
 end
 
+const ORIENTATION_MATRIX = transpose(reshape(collect(1:81), 9,9))
+
 function randstep(uttt::UTicTacToe, a)
     uttt_copy = deepcopy(uttt)
     take_turn(uttt_copy, a)
@@ -39,6 +41,30 @@ function get_s(uttt::UTicTacToe)
     # return gen_symmetric_states(uttt_board, uttt.ttt_boards_x, uttt.ttt_boards_y)
     str_board = join(collect(Iterators.flatten(uttt_board)))
     return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
+end
+
+function fix_orientation(board::Matrix{Int64})
+    best_score = sum(board .* ORIENTATION_MATRIX)
+    best_board = board
+    for i in 1:4
+        rotated_board = board
+        for j in 1:i
+            rotated_board = rotr90(rotated_board)
+        end
+        rotate_score = sum(rotated_board .* ORIENTATION_MATRIX)
+        if (rotate_score < best_score)
+            best_score = rotate_score
+            best_board = rotated_board
+        end
+
+        flipped_board = reverse(rotated_board, dims=1)
+        flipped_score = sum(flipped_board .* ORIENTATION_MATRIX)
+        if (flipped_score < best_score)
+            best_score = flipped_score
+            best_board = flipped_board
+        end
+    end
+    return best_board
 end
 
 function gen_symmetric_states(board::Matrix{Int64}, x::Int64, y::Int64) 
