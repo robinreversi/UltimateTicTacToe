@@ -16,11 +16,30 @@ function randstep(uttt::UTicTacToe, a)
     uttt_copy = deepcopy(uttt)
     take_turn(uttt_copy, a)
     next_valid_mvs = u_valid_moves(uttt_copy)
-    if (u_has_won(uttt) == 0 && !isempty(next_valid_mvs))
+    if (u_has_won(uttt_copy) == 0 && !isempty(next_valid_mvs))
         rand_move = rand(next_valid_mvs)
         take_turn(uttt_copy, rand_move)
     end
     return uttt_copy
+end
+
+function randomized_rollout(uttt::UTicTacToe, player)
+    uttt_copy = deepcopy(uttt)
+    valid_moves = u_valid_moves(uttt_copy)
+    while (u_has_won(uttt_copy) == 0 && !isempty(valid_moves))
+        valid_moves = u_valid_moves(uttt_copy)
+        if (!isempty(valid_moves))
+            rand_move = rand(valid_moves)
+            take_turn(uttt_copy, rand_move)
+        end
+    end
+    if (u_has_won(uttt_copy) == 0) 
+        return 0
+    elseif (u_has_won(uttt_copy) == player)
+        return 1
+    else
+        return -1
+    end
 end
 
 function nine_by_nine_to_4_tuple(i::Int8, j::Int8)
@@ -33,7 +52,7 @@ end
 
 function create_9x9_board(uttt::UTicTacToe)
     uttt_board = zeros(Int8, (9, 9))
-    for  j=1:9, i=1:9
+    for j=1:9, i=1:9
         yloc, xloc, inner_yloc, inner_xloc = nine_by_nine_to_4_tuple(Int8(i),Int8(j))
         inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
         uttt_board[i, j] = inner_board_val 
@@ -43,7 +62,7 @@ end
 
 function create_ttt_boards(uttt_board::Matrix{Int8})
     ttt_boards = [TicTacToe(zeros(Int8, 3, 3)) for i = 1:3, j = 1:3]
-    for  j=1:9, i=1:9
+    for j=1:9, i=1:9
         yloc, xloc, inner_yloc, inner_xloc = nine_by_nine_to_4_tuple(Int8(i),Int8(j))
         ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc] = uttt_board[i, j]
     end

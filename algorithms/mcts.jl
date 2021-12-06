@@ -48,7 +48,7 @@ end
 
 function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.d)
     if (algo.d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves(game)))
-        return U(game, player)
+        return randomized_rollout(game, player)
     end
 
     s = get_s(game)
@@ -59,7 +59,7 @@ function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.
             algo.N[compress_s_a(s, a)] = 0
             algo.Q[compress_s_a(s, a)] = 0.0
         end
-        return U(game, player)
+        return randomized_rollout(game, player)
     end
     
     a = explore(algo, s, valid_mvs)
@@ -95,8 +95,8 @@ function train(d::Int8, m::Int8, c::Float64, γ::Float64, num_games::Int64, save
         end
         
         if (i % save_every == 0)
-            bson("mcts_states/mcts_N_game_" * string(i), mcts.N)
-            bson("mcts_states/mcts_Q_game_" * string(i), mcts.Q)
+            bson("mcts_states/rr_mcts_N_game_" * string(i) * "_d" * string(d) * "_m" * string(m), mcts.N)
+            bson("mcts_states/rr_mcts_Q_game_" * string(i) * "_d" * string(d) * "_m" * string(m), mcts.Q)
         end
     end
     return mcts
