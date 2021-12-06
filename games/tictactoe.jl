@@ -1,10 +1,10 @@
 using LinearAlgebra
 
 mutable struct TicTacToe
-    board::Matrix{Int64} # 3x3 array
+    board::Matrix{Int8} # 3x3 array
 end
 
-function take_turn(ttt::TicTacToe, current_player::Int64, xloc::Int64, yloc::Int64) 
+function take_turn(ttt::TicTacToe, current_player::Int8, xloc::Int8, yloc::Int8) 
     ttt.board[xloc, yloc] = current_player; 
 end 
 
@@ -28,15 +28,15 @@ function display_board(ttt::TicTacToe)
     display(displayable_board)
 end
 
-function has_won(board::Matrix{Int64})
+function has_won(board::Matrix{Int8})
     return ttt_has_won_dict[board]
 end
 
 function precompute_ttt_has_won()
     w = [[2, 1, 2] [1, 3, 1] [2, 1, 2]]
-    dict = Dict{Matrix{Int64}, Int64}()
+    dict = Dict{Matrix{Int8}, Int8}()
     for i in 1:(3^9)
-        board = zeros(Int64, 3, 3)
+        board = zeros(Int8, 3, 3)
         c = i
         for j in 1:9
             mark = 0

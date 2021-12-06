@@ -17,38 +17,47 @@ function setup(algorithm, ARGS)
         if length(ARGS) != 4
             error("usage: julia project1.jl sparse_sampling <m> <d> <g>")
         end
-        algo = SparseSampling(tryparse(Int64, ARGS[2]), tryparse(Int64, ARGS[3]), tryparse(Float64, ARGS[4]))
+        algo = SparseSampling(tryparse(Int8, ARGS[2]), tryparse(Int8, ARGS[3]), tryparse(Float64, ARGS[4]))
     end
 
     if (algorithm == "expectiminimax")
         if length(ARGS) != 3
             error("usage: julia project1.jl expectiminimax <d> <g>")
         end
-        algo = ExpectiMiniMax(tryparse(Int64, ARGS[2]), tryparse(Float64, ARGS[3]))
+        algo = ExpectiMiniMax(tryparse(Int8, ARGS[2]), tryparse(Float64, ARGS[3]))
     end
 
     if (algorithm == "mcts")
-        if length(ARGS) != 5
-            error("usage: julia project1.jl expectiminimax <d> <m> <c> <γ>")
+        if length(ARGS) < 5
+            error("usage: julia project1.jl mcts <d> <m> <c> <γ> <load_no>")
         end
-        N = Dict{Any, Int64}()
-        Q = Dict{Any, Float64}()
-        d = tryparse(Int64, ARGS[2])
-        m = tryparse(Int64, ARGS[3])
+        N = Dict{String, Int16}()
+        Q = Dict{String, Float64}()
+        d = tryparse(Int8, ARGS[2])
+        m = tryparse(Int8, ARGS[3])
         c = tryparse(Float64, ARGS[4])
         γ = tryparse(Float64, ARGS[5])
+        if length(ARGS) == 6
+            N = BSON.load("mcts_states/mcts_N_game_" * ARGS[6])
+            Q = BSON.load("mcts_states/mcts_Q_game_" * ARGS[6])
+            c = 0
+        end
         algo = MonteCarloTreeSearch(N, Q, d, m, c, γ)
+        if (isempty(algo.N)) 
+            algo = train(d, m, c, γ, 100, 1000000000)
+            algo.c = 0
+        end
     end
 
     # Initialize 9 individual TicTacToe boards
-    ttt_boards = [TicTacToe(zeros(Int64, 3, 3)) for i = 1:3, j = 1:3]
+    ttt_boards = [TicTacToe(zeros(Int8, 3, 3)) for i = 1:3, j = 1:3]
 
     # Initialize Ultimate TicTacToe game
     game = UTicTacToe(ttt_boards, 1, -1, -1, (-1,-1,-1,-1))
     return algo, game
 end
 
-function move_prompt_text(game::UTicTacToe, move::Union{Tuple{Int64, Int64, Int64, Int64}, Nothing})
+function move_prompt_text(game::UTicTacToe, move::Union{Tuple{Int8, Int8, Int8, Int8}, Nothing})
     run(`clear`)
     println("Current board:\n")
     display_board(game)
@@ -65,7 +74,7 @@ function move_prompt_text(game::UTicTacToe, move::Union{Tuple{Int64, Int64, Int6
     println()
 end
 
-function waiting_text(game::UTicTacToe, move::Union{Tuple{Int64, Int64, Int64, Int64}, Nothing})
+function waiting_text(game::UTicTacToe, move::Union{Tuple{Int8, Int8, Int8, Int8}, Nothing})
     run(`clear`)
     println("Current board:\n")
     display_board(game)
@@ -93,7 +102,7 @@ function get_player_move(game::UTicTacToe)
         while true
             move_vec = split(readline(), ",")
             if size(move_vec) == (4,)
-                board_xidx, board_yidx, xloc, yloc = tryparse(Int64, move_vec[1]), tryparse(Int64, move_vec[2]), tryparse(Int64, move_vec[3]), tryparse(Int64, move_vec[4])
+                board_xidx, board_yidx, xloc, yloc = tryparse(Int8, move_vec[1]), tryparse(Int8, move_vec[2]), tryparse(Int8, move_vec[3]), tryparse(Int8, move_vec[4])
                 if board_xidx !== nothing  && board_yidx !== nothing && xloc !== nothing && yloc !== nothing
                     break
                 end

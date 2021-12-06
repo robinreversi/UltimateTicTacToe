@@ -4,10 +4,10 @@ include("tictactoe.jl")
 using Base.Iterators
 mutable struct UTicTacToe
     ttt_boards::Matrix{TicTacToe}  # 3x3 array of tic tac toe boards
-    current_player::Int64 # 1 or -1
-    ttt_boards_x::Int64 # designated x ultimate board idx
-    ttt_boards_y::Int64 # designated y board idx
-    previous_move::Tuple{Int64, Int64, Int64, Int64}
+    current_player::Int8 # 1 or -1
+    ttt_boards_x::Int8 # designated x ultimate board idx
+    ttt_boards_y::Int8 # designated y board idx
+    previous_move::Tuple{Int8, Int8, Int8, Int8}
 end
 
 const ORIENTATION_MATRIX = transpose(reshape(collect(1:81), 9,9))
@@ -37,6 +37,18 @@ function create_9x9_board(uttt::UTicTacToe)
     return uttt_board
 end
 
+function create_ttt_boards(uttt_board::Matrix{Int8})
+    ttt_boards = [TicTacToe(zeros(Int8, 3, 3)) for i = 1:3, j = 1:3]
+    for  j=1:9, i=1:9
+        xloc = (i-1) ÷ 3 + 1
+        yloc = (j-1) ÷ 3 + 1
+        inner_xloc = (i-1) % 3 + 1
+        inner_yloc = (j-1) % 3 + 1
+        ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc] = uttt_board[j, i]
+    end
+    return ttt_boards
+end
+
 function get_s(uttt::UTicTacToe)
     uttt_board = create_9x9_board(uttt)
     uttt_board *= uttt.current_player
@@ -45,7 +57,7 @@ function get_s(uttt::UTicTacToe)
     return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
 end
 
-function to_bot_orientation(board::Matrix{Int64})
+function to_bot_orientation(board::Matrix{Int8})
     # I: 1
     # R: 2
     # RR: 3
@@ -56,9 +68,9 @@ function to_bot_orientation(board::Matrix{Int64})
     # RRRH: 8
 
     # I
-    best_score = sum(board .* ORIENTATION_MATRIX)
+    best_score = sum(abs.(board) .* ORIENTATION_MATRIX)
     best_board = board
-    transform_idx = 1 
+    transform_idx = Int8(1) 
 
     # R, RR, RRR
     rotated_board = board
@@ -68,7 +80,7 @@ function to_bot_orientation(board::Matrix{Int64})
         if (score < best_score) 
             best_score = score 
             best_board = rotated_board 
-            transform_idx = i 
+            transform_idx = Int8(i) 
         end
     end
 
@@ -78,7 +90,7 @@ function to_bot_orientation(board::Matrix{Int64})
     if (score < best_score)
         best_score = score 
         best_board = rotated_board
-        transform_idx = 5 
+        transform_idx = Int8(5) 
     end
 
     # RH = HL, RRH = HLL, RRRH (LH) = HLLL (HR) (a = rand(9,9); b = reverse(rotr90(rotr90(rotr90(a))),dims=1); c = rotl90(rotl90(rotl90(reverse(a, dims=1)))) )
@@ -88,14 +100,14 @@ function to_bot_orientation(board::Matrix{Int64})
         if (score < best_score) 
             best_score = score; 
             best_board = rotated_board; 
-            transform_idx = i 
+            transform_idx = Int8(i) 
         end
     end
 
     return best_board, transform_idx
 end
 
-function to_player_orientation(board::Matrix{Int64}, transform_idx::Int64)
+function to_player_orientation(board::Matrix{Int8}, transform_idx::Int8)
     if transform_idx == 1 # I
         return board
     elseif transform_idx == 2 # R
@@ -115,7 +127,7 @@ function to_player_orientation(board::Matrix{Int64}, transform_idx::Int64)
     end
 end
 
-function to_bot_move(a::Tuple{Int64, Int64, Int64, Int64}, transform_idx::Int64)
+function to_bot_move(a::Tuple{Int8, Int8, Int8, Int8}, transform_idx::Int8)
     if transform_idx == 1 # I
         return a
     end
@@ -147,32 +159,32 @@ function to_bot_move(a::Tuple{Int64, Int64, Int64, Int64}, transform_idx::Int64)
     # Convert from distance vector to coordinates
     transformed_i = transformed_vec[1] + 5
     transformed_j = transformed_vec[2] + 5
-    return nine_by_nine_to_4_tuple(transformed_i, transformed_j)
+    return nine_by_nine_to_4_tuple(Int8(transformed_i), Int8(transformed_j))
 end
 
-function to_player_move(a::Tuple{Int64, Int64, Int64, Int64}, transform_idx::Int64) # undoing the transform performed by transform_idx
+function to_player_move(a::Tuple{Int8, Int8, Int8, Int8}, transform_idx::Int8) # undoing the transform performed by transform_idx
     if transform_idx == 1 # I needs I    
         return a
     elseif transform_idx == 2 # R needs L (RRR)
-        return(to_bot_move(a, 4))
+        return(to_bot_move(a, Int8(4)))
     elseif transform_idx == 3 # RR needs LL (or RR)
-        return(to_bot_move(a, 3))
+        return(to_bot_move(a, Int8(3)))
     elseif transform_idx == 4 # RRR needs R
-        return(to_bot_move(a, 2))
+        return(to_bot_move(a, Int8(2)))
     elseif transform_idx == 5 # H needs H
-        return(to_bot_move(a, 5))
+        return(to_bot_move(a, Int8(5)))
     elseif transform_idx == 6 # RH needs HL = RH
-        return(to_bot_move(a, 6))
+        return(to_bot_move(a, Int8(6)))
     elseif transform_idx == 7 # RRH needs HLL = RRH
-        return(to_bot_move(a, 7))
+        return(to_bot_move(a, Int8(7)))
     else # RRRH needs HLLL = RRRH
-        return(to_bot_move(a, 8))
+        return(to_bot_move(a, Int8(8)))
     end
 end
 
-function gen_symmetric_states(board::Matrix{Int64}, x::Int64, y::Int64) 
+function gen_symmetric_states(board::Matrix{Int8}, x::Int8, y::Int8) 
     symmetric_states = Set{String}()
-    pos = zeros(Int64, 3, 3)
+    pos = zeros(Int8, 3, 3)
     if (x != -1)
         pos[x, y] = 1
     end
@@ -202,7 +214,7 @@ function gen_symmetric_states(board::Matrix{Int64}, x::Int64, y::Int64)
     return symmetric_states
 end
 
-function take_turn(uttt::UTicTacToe, a::Tuple{Int64, Int64, Int64, Int64}) 
+function take_turn(uttt::UTicTacToe, a::Tuple{Int8, Int8, Int8, Int8}) 
     uttt.previous_move = a
     board_xidx, board_yidx, xloc, yloc = a[1], a[2], a[3], a[4]
 
@@ -224,7 +236,7 @@ end
 
 function u_has_won(uttt::UTicTacToe)
     # iterate through boards & check
-    win_arr = zeros(Int64, 3, 3)
+    win_arr = zeros(Int8, 3, 3)
     for i = 1:3, j = 1:3
         win_arr[i,j] = has_won(uttt.ttt_boards[i,j].board)
     end
@@ -235,7 +247,7 @@ function whose_turn(uttt::UTicTacToe)
     return uttt.current_player
 end
 
-function add_moves_from_board(i::Int64, j::Int64, uttt::UTicTacToe, filtered_mvs::Dict{String, Tuple{Int64, Int64, Int64, Int64}})
+function add_moves_from_board(i::Int8, j::Int8, uttt::UTicTacToe, filtered_mvs::Dict{String, Tuple{Int8, Int8, Int8, Int8}})
     board_valid_mvs = valid_moves(uttt.ttt_boards[i,j])
     board = create_9x9_board(uttt)
     board *= uttt.current_player
@@ -243,7 +255,7 @@ function add_moves_from_board(i::Int64, j::Int64, uttt::UTicTacToe, filtered_mvs
         board_xidx, board_yidx, xloc, yloc = i, j, move[1], move[2]
         a = (board_xidx, board_yidx, xloc, yloc)
         board[xloc + 3 * (board_xidx - 1), yloc + 3 * (board_yidx - 1)] = 1
-        symmetric_states = gen_symmetric_states(board::Matrix{Int64}, xloc, yloc) 
+        symmetric_states = gen_symmetric_states(board::Matrix{Int8}, convert(Int8, xloc), convert(Int8, yloc))
         match_found = false
         for s in symmetric_states
             if (haskey(filtered_mvs, s))
@@ -266,9 +278,10 @@ function u_valid_moves(uttt::UTicTacToe)
     contained in the filtered move set. If none are, then we add one of the states 
     to the filtered_mvs. Everything is done from the perspective of player 1
     """
-    filtered_mvs = Dict{String, Tuple{Int64, Int64, Int64, Int64}}()
+    filtered_mvs = Dict{String, Tuple{Int8, Int8, Int8, Int8}}()
+    
     if uttt.ttt_boards_x == -1
-        for i = 1:3, j = 1:3
+        for i::Int8 = 1:3, j::Int8 = 1:3
             add_moves_from_board(i, j, uttt, filtered_mvs)
         end
     else 
@@ -277,17 +290,17 @@ function u_valid_moves(uttt::UTicTacToe)
     return vec(collect(values(filtered_mvs)))
 end
 
-function nine_by_nine_to_4_tuple(i::Int64, j::Int64)
+function nine_by_nine_to_4_tuple(i::Int8, j::Int8)
     xloc = (i-1) ÷ 3 + 1
     yloc = (j-1) ÷ 3 + 1
     inner_xloc = (i-1) % 3 + 1
     inner_yloc = (j-1) % 3 + 1
-    return xloc, yloc, inner_xloc, inner_yloc
+    return Int8(xloc), Int8(yloc), Int8(inner_xloc), Int8(inner_yloc)
 end
 
 function display_board(uttt::UTicTacToe)
     for j=1:9, i=1:9
-        xloc, yloc, inner_xloc, inner_yloc = nine_by_nine_to_4_tuple(i,j)
+        xloc, yloc, inner_xloc, inner_yloc = nine_by_nine_to_4_tuple(Int8(i),Int8(j))
         inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
         if (inner_board_val == 1)
             reverse = (uttt.previous_move == (xloc, yloc, inner_xloc, inner_yloc)) # highlight previous move

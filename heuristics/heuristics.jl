@@ -174,9 +174,9 @@ end
 
 function precompute_ttt_heuristics()
     w = [[2, 1, 2] [1, 3, 1] [2, 1, 2]]
-    dict = Dict{Matrix{Int64}, Int64}()
+    dict = Dict{Matrix{Int8}, Int8}()
     for i in 1:(3^9)
-        board = zeros(Int64, 3, 3)
+        board = zeros(Int8, 3, 3)
         c = i
         for j in 1:9
             mark = 0

@@ -6,8 +6,8 @@ using ProgressBars
 using SHA
 
 struct MonteCarloTreeSearch
-    N::Dict{String, Int64} # visit counts
-    Q::Dict{String, Float64} # action value estimates 
+    N::Dict{String, Int16} # visit counts
+    Q::Dict{String, Float32} # action value estimates 
     d::Int64 # depth
     m::Int64 # number of simulations 
     c::Float64 # exploration constant
@@ -15,17 +15,38 @@ struct MonteCarloTreeSearch
 end 
 
 function choose_action(game::UTicTacToe, algo::MonteCarloTreeSearch)
-    for k in 1:algo.m
-        simulate!(game, algo, game.current_player)
+    board = create_9x9_board(game)
+    bot_board, transform_idx = to_bot_orientation(board)
+    println("TRANSFORM IDX: ", transform_idx)
+    display(board)
+    display(bot_board)
+    println("orig ttt_boards_x, y: ", game.ttt_boards_x, " ", game.ttt_boards_y)
+    ttt_boards = create_ttt_boards(bot_board)
+    bot_boards_x, bot_boards_y = Int8(-1), Int8(-1)
+    if (game.ttt_boards_x != - 1)
+        bot_boards_y, bot_boards_x, _, _ = to_bot_move((game.ttt_boards_x, game.ttt_boards_y, Int8(2), Int8(2)), transform_idx)
     end
-    valid_mvs = u_valid_moves(game)
-    return argmax(a->algo.Q[compress_s_a(get_s(game), a)], valid_mvs)
+    println("bot boards x, y: ", bot_boards_x, " ", bot_boards_y)
+    bot_prev_move = to_bot_move(game.previous_move, transform_idx)
+    bot_game = UTicTacToe(ttt_boards, game.current_player, bot_boards_x, bot_boards_y, bot_prev_move)
+
+    for k in 1:algo.m
+        simulate!(bot_game, algo, game.current_player)
+    end
+    valid_mvs = u_valid_moves(bot_game)
+    display_board(game)
+    display_board(bot_game)
+    a = argmax(a->algo.Q[compress_s_a(get_s(bot_game), a)], valid_mvs)
+    println("ACTION: ", a)
+    println()
+    return to_player_move(a, transform_idx)
 end 
 
 function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.d)
     if (algo.d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves(game)))
         return U(game, player)
     end
+
     s = get_s(game)
     valid_mvs = u_valid_moves(game)
     
@@ -57,7 +78,7 @@ function explore(algo::MonteCarloTreeSearch, s, valid_mvs)
     return argmax(a->algo.Q[compress_s_a(s,a)] + algo.c*bonus(algo.N[compress_s_a(s,a)], Ns), valid_mvs)
 end 
 
-function train(d::Int64, m::Int64, c::Float64, γ::Float64, num_games::Int64, save_every::Int64)
+function train(d::Int8, m::Int8, c::Float64, γ::Float64, num_games::Int64, save_every::Int64)
     N = Dict{Any, Int64}()
     Q = Dict{Any, Float64}()
     mcts = MonteCarloTreeSearch(N, Q, d, m, c, γ)
