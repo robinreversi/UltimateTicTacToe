@@ -6,17 +6,17 @@ function U(game, player)
     Heuristic function for evaluating 
     positions in Ultimate TTT 
     should return 
-        inf if the player wins
-        -inf if the player lost
+        10000 if the player wins
+        -10000 if the player lost
         heuristic if the neither
     currently evaluates the global positions 
 
     """
     game_winner = u_has_won(game)
     if (game_winner == player)
-        return Inf
+        return 10000
     elseif (game_winner == -1 * player)
-        return -Inf
+        return -10000
     end
 
     w = [[2, 1, 2] [1, 3, 1] [2, 1, 2]]

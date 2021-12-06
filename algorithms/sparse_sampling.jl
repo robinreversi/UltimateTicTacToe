@@ -8,8 +8,7 @@ struct SparseSampling
 end
 
 function choose_action(game::UTicTacToe, algo::SparseSampling) 
-    player = game.current_player
-    best = choose_action_helper(game, algo.d, algo.m, algo.g, player)
+    best = choose_action_helper(game, algo.d, algo.m, algo.g, game.current_player)
     return best.a
 end
 

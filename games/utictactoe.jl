@@ -35,8 +35,7 @@ function create_9x9_board(uttt::UTicTacToe)
     uttt_board = zeros(Int8, (9, 9))
     for  x=1:9, y=1:9
         yloc, xloc, inner_yloc, inner_xloc = nine_by_nine_to_4_tuple(Int8(x),Int8(y))
-        inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
-        uttt_board[x, y] = inner_board_val 
+        uttt_board[x, y] = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
     end
     return uttt_board
 end
@@ -50,12 +49,7 @@ function create_ttt_boards(uttt_board::Matrix{Int8})
     return ttt_boards
 end
 
-function get_s(uttt::UTicTacToe)
-    uttt_board = create_9x9_board(uttt)
-    uttt_board *= uttt.current_player
-    str_board = join(collect(Iterators.flatten(uttt_board)))
-    return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
-end
+
 
 function to_bot_orientation(board::Matrix{Int8})
     # I: 1
