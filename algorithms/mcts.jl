@@ -14,35 +14,38 @@ struct MonteCarloTreeSearch
     γ::Float64 # discount
 end 
 
+function get_s(uttt::UTicTacToe)
+    uttt_board = create_9x9_board(uttt)
+    uttt_board *= uttt.current_player
+    str_board = join(collect(Iterators.flatten(uttt_board)))
+    return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
+end
+
 function choose_action(game::UTicTacToe, algo::MonteCarloTreeSearch)
+    # Create 9x9 board from 9 3x3 boards to find symmetries
     board = create_9x9_board(game)
+
+    # Convert board view to bot's board view
     bot_board, transform_idx = to_bot_orientation(board)
-    # println("TRANSFORM IDX: ", transform_idx)
-    # println("PLAYER BOARD: ")
-    # display(board)
-    # println("BOT BOARD: ")
-    # display(bot_board)
-    # println("orig ttt_boards_x, y: ", game.ttt_boards_x, " ", game.ttt_boards_y)
+
+    # Create 9 3x3 boards from newly trasnformed 9x9 board
     ttt_boards = create_ttt_boards(bot_board)
+
+    # Determine remaining UTicTacToe information
     bot_boards_x, bot_boards_y = Int8(-1), Int8(-1)
     if (game.ttt_boards_x != - 1)
         bot_boards_x, bot_boards_y, _, _ = to_bot_move((game.ttt_boards_x, game.ttt_boards_y, Int8(2), Int8(2)), transform_idx)
     end
-    # println("bot boards x, y: ", bot_boards_x, " ", bot_boards_y)
     bot_prev_move = to_bot_move(game.previous_move, transform_idx)
+
+    # Create bot_game
     bot_game = UTicTacToe(ttt_boards, game.current_player, bot_boards_x, bot_boards_y, bot_prev_move)
     
     for k in 1:algo.m
         simulate!(bot_game, algo, game.current_player)
     end
     valid_mvs = u_valid_moves(bot_game)
-    # println("PLAYER BOARD: ")
-    # display_board(game)
-    # println("BOT BOARD: ")
-    # display_board(bot_game)
     a = argmax(a->algo.Q[compress_s_a(get_s(bot_game), a)], valid_mvs)
-    # println("ACTION: ", a)
-    # println()
     return to_player_move(a, transform_idx)
 end 
 

@@ -42,39 +42,33 @@ function randomized_rollout(uttt::UTicTacToe, player)
     end
 end
 
-function nine_by_nine_to_4_tuple(i::Int8, j::Int8)
-    xloc = (i-1) ÷ 3 + 1
-    yloc = (j-1) ÷ 3 + 1
-    inner_xloc = (i-1) % 3 + 1
-    inner_yloc = (j-1) % 3 + 1
+function nine_by_nine_to_4_tuple(x::Int8, y::Int8)
+    xloc = (x-1) ÷ 3 + 1
+    yloc = (y-1) ÷ 3 + 1
+    inner_xloc = (x-1) % 3 + 1
+    inner_yloc = (y-1) % 3 + 1
     return Int8(xloc), Int8(yloc), Int8(inner_xloc), Int8(inner_yloc)
 end
 
 function create_9x9_board(uttt::UTicTacToe)
     uttt_board = zeros(Int8, (9, 9))
-    for j=1:9, i=1:9
-        yloc, xloc, inner_yloc, inner_xloc = nine_by_nine_to_4_tuple(Int8(i),Int8(j))
-        inner_board_val = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
-        uttt_board[i, j] = inner_board_val 
+    for  x=1:9, y=1:9
+        yloc, xloc, inner_yloc, inner_xloc = nine_by_nine_to_4_tuple(Int8(x),Int8(y))
+        uttt_board[x, y] = uttt.ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc]
     end
     return uttt_board
 end
 
 function create_ttt_boards(uttt_board::Matrix{Int8})
     ttt_boards = [TicTacToe(zeros(Int8, 3, 3)) for i = 1:3, j = 1:3]
-    for j=1:9, i=1:9
-        yloc, xloc, inner_yloc, inner_xloc = nine_by_nine_to_4_tuple(Int8(i),Int8(j))
-        ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc] = uttt_board[i, j]
+    for  x=1:9, y=1:9
+        yloc, xloc, inner_yloc, inner_xloc = nine_by_nine_to_4_tuple(Int8(x),Int8(y))
+        ttt_boards[xloc, yloc].board[inner_xloc, inner_yloc] = uttt_board[x, y]
     end
     return ttt_boards
 end
 
-function get_s(uttt::UTicTacToe)
-    uttt_board = create_9x9_board(uttt)
-    uttt_board *= uttt.current_player
-    str_board = join(collect(Iterators.flatten(uttt_board)))
-    return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
-end
+
 
 function to_bot_orientation(board::Matrix{Int8})
     # I: 1
