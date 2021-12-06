@@ -36,6 +36,7 @@ end
 function get_s(uttt::UTicTacToe)
     uttt_board = create_9x9_board(uttt)
     uttt_board *= uttt.current_player
+    # return gen_symmetric_states(uttt_board, uttt.ttt_boards_x, uttt.ttt_boards_y)
     str_board = join(collect(Iterators.flatten(uttt_board)))
     return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
 end
@@ -59,7 +60,15 @@ function gen_symmetric_states(board::Matrix{Int64}, x::Int64, y::Int64)
             new_pos = findall(val->val==1, rotated_pos)[1]
         end
         rotated_state = join(collect(Iterators.flatten(rotated_board))) * string(new_pos[1]) * string(new_pos[2])
+        
+        flipped_board = reverse(rotated_board, dims=1)
+        flipped_pos = reverse(rotated_pos, dims=1)
+        if (x != -1)
+            new_pos = findall(val->val==1, flipped_pos)[1]
+        end
+        flipped_state = join(collect(Iterators.flatten(flipped_board))) * string(new_pos[1]) * string(new_pos[2])
         push!(symmetric_states, rotated_state)
+        push!(symmetric_states, flipped_state)
     end
     return symmetric_states
 end
