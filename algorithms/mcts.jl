@@ -34,7 +34,7 @@ end
 
 function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.d)
     if (algo.d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves_all(game)))
-        return U(game, player)
+        return randomized_rollout(game, player)
     end
 
     s = get_s(game)
@@ -50,7 +50,7 @@ function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.
     
     a = explore(algo, s, valid_mvs)
     game′ = randstep(game, a)
-    q = U(game′, player) + algo.γ * simulate!(game′, algo, player, algo.d - 1)
+    q = algo.γ * simulate!(game′, algo, player, algo.d - 1)
     algo.N[compress_s_a(s, a)] += 1
     algo.Q[compress_s_a(s, a)] += (q - algo.Q[compress_s_a(s, a)])/algo.N[compress_s_a(s, a)]
     return q
