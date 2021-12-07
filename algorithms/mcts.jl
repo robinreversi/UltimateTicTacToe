@@ -5,7 +5,7 @@ using BSON
 using ProgressBars
 using SHA
 
-struct MonteCarloTreeSearch
+mutable struct MonteCarloTreeSearch
     N # visit counts
     Q # action value estimates 
     d::Int64 # depth
