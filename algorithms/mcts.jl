@@ -17,8 +17,9 @@ end
 function get_s(uttt::UTicTacToe)
     uttt_board = create_9x9_board(uttt)
     uttt_board *= uttt.current_player
-    str_board = join(collect(Iterators.flatten(uttt_board)))
-    return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
+    return (uttt_board, uttt.ttt_boards_x, uttt.ttt_boards_y)
+    # str_board = join(collect(Iterators.flatten(uttt_board)))
+    # return str_board * string(uttt.ttt_boards_x) * string(uttt.ttt_boards_y)
 end
 
 function choose_action(game::UTicTacToe, algo::MonteCarloTreeSearch)
@@ -57,8 +58,9 @@ function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.
 end
 
 function compress_s_a(s, a)
-    compressed_s = s * string(a[1]) * string(a[2]) * string(a[3]) * string(a[4])
-    return bytes2hex(sha256(compressed_s))
+    return (s, a)
+    # compressed_s = s * string(a[1]) * string(a[2]) * string(a[3]) * string(a[4])
+    # return bytes2hex(sha256(compressed_s))
 end
 
 bonus(Nsa, Ns) = Nsa == 0 ? Inf : sqrt(log(Ns)/Nsa)
