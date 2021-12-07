@@ -115,7 +115,7 @@ function setup_algo(params)
             println("Please wait while the MCTS model is trained.")
             algo1 = train(d_mcts, m, c, γ, 1000, 1000000000)
         end
-        algo.m = 100
+        algo1.m = 100
         algo2 = ExpectiMiniMax(d_expectiminimax, γ)
         algo = Composite(algo1, algo2, τ, 0)
     end
