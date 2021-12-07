@@ -1,6 +1,3 @@
-include("../games/utictactoe.jl")
-include("../heuristics/heuristics.jl")
-
 struct ExpectiMiniMax
     d # depth
     g # gamma discount factor

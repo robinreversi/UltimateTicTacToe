@@ -1,9 +1,4 @@
-include("../games/utictactoe.jl")
-include("../heuristics/heuristics.jl")
-include("../algorithms/expectiminimax.jl")
-include("../algorithms/mcts.jl")
-
-struct Composite
+mutable struct Composite
     mcts::MonteCarloTreeSearch  # start strong with MCTS
     expectiminimax::ExpectiMiniMax # finish strong with expectiminimax
     τ::Int8 # Turn when switch from MCTS to expectiminimax
@@ -17,6 +12,6 @@ function choose_action(game::UTicTacToe, algo::Composite)
     else
         move = choose_action(game, algo.expectiminimax)
     end
-    num_turns += 1
+    algo.num_turns += 1
     return move
 end 

@@ -1,8 +1,11 @@
+include("games/tictactoe.jl")
+include("games/utictactoe.jl")
+include("heuristics/heuristics.jl")
 include("algorithms/sparse_sampling.jl")
 include("algorithms/expectiminimax.jl")
-include("algorithms/composite.jl")
 include("algorithms/mcts.jl")
-include("games/utictactoe.jl")
+include("algorithms/composite.jl")
+
 using BSON
 
 function choose_mode()
@@ -38,10 +41,10 @@ function choose_algo()
         return setup_algo(["expectiminimax", "3", ".9"])
     elseif input == "3"
         #return setup_algo(["mcts", "3", "10", "5", ".9", "1000"])
-        return setup_algo(["mcts", "3", "10", "5", ".9"])
+        return setup_algo(["mcts", "4", "7", "5", ".9"])
 
     elseif input == "4"
-        return setup_algo(["composite", "3", "10", "5", "4", "15", ".9"])
+        return setup_algo(["composite", "3", "7", "5", "4", "15", ".9"])
         #return setup_algo(["composite", "3", "10", "5", "4", "15", ".9", "1000"])
     else
         println("Sorry, unable to understand your input.")
@@ -86,7 +89,8 @@ function setup_algo(params)
         end
         algo = MonteCarloTreeSearch(N, Q, d, m, c, γ)
         if (isempty(algo.N)) 
-            algo = train(d, m, c, γ, 100, 1000000000)
+            println("Please wait while the MCTS model is trained.")
+            algo = train(d, m, c, γ, 1000, 1000000000)
             algo.c = 0
         end
     end
@@ -110,7 +114,8 @@ function setup_algo(params)
         end
         algo1 = MonteCarloTreeSearch(N, Q, d_mcts, m, c, γ)
         if (isempty(algo1.N)) 
-            algo1 = train(d_mcts, m, c, γ, 100, 1000000000)
+            println("Please wait while the MCTS model is trained.")
+            algo1 = train(d_mcts, m, c, γ, 1000, 1000000000)
             algo1.c = 0
         end
         algo2 = ExpectiMiniMax(d_expectiminimax, γ)

@@ -1,6 +1,3 @@
-#using BSON
-include("../games/utictactoe.jl")
-
 function U(game, player)
     """
     Heuristic function for evaluating 

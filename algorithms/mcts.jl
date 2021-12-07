@@ -1,6 +1,3 @@
-include("../games/utictactoe.jl")
-include("../heuristics/heuristics.jl")
-
 using BSON
 using ProgressBars
 using SHA

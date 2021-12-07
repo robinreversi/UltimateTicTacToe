@@ -1,6 +1,4 @@
 using LinearAlgebra
-
-include("tictactoe.jl")
 using Base.Iterators
 using Memoize
 

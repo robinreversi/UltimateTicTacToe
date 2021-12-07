@@ -1,6 +1,3 @@
-include("../games/utictactoe.jl")
-include("../heuristics/heuristics.jl")
-
 struct SparseSampling
     m # number of samples
     d # depth
