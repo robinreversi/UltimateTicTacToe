@@ -1,3 +1,6 @@
+include("../games/utictactoe.jl")
+include("../heuristics/heuristics.jl")
+
 using BSON
 using ProgressBars
 using SHA
@@ -25,13 +28,13 @@ function choose_action(game::UTicTacToe, algo::MonteCarloTreeSearch)
         simulate!(bot_game, algo, game.current_player)
     end
     valid_mvs = u_valid_moves_unique(bot_game)
-    a = argmax(a->algo.Q[compress_s_a(get_s(bot_game), a)], valid_mvs)
+    a = argmax(a->algo.N[compress_s_a(get_s(bot_game), a)], valid_mvs)
     return to_player_move(a, transform_idx)
 end 
 
 function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.d)
     if (algo.d <= 0 || u_has_won(game) != 0 || isempty(u_valid_moves_all(game)))
-        return randomized_rollout(game, player)
+        return U(game, player)
     end
 
     s = get_s(game)
@@ -42,12 +45,12 @@ function simulate!(game::UTicTacToe, algo::MonteCarloTreeSearch, player, d=algo.
             algo.N[compress_s_a(s, a)] = 0
             algo.Q[compress_s_a(s, a)] = 0.0
         end
-        return randomized_rollout(game, player)
+        return U(game, player)
     end
     
     a = explore(algo, s, valid_mvs)
     game′ = randstep(game, a)
-    q = algo.γ * simulate!(game′, algo, player, algo.d - 1)
+    q = U(game′, player) + algo.γ * simulate!(game′, algo, player, algo.d - 1)
     algo.N[compress_s_a(s, a)] += 1
     algo.Q[compress_s_a(s, a)] += (q - algo.Q[compress_s_a(s, a)])/algo.N[compress_s_a(s, a)]
     return q

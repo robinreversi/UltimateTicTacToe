@@ -41,8 +41,7 @@ function choose_algo()
         return setup_algo(["expectiminimax", "3", ".9"])
     elseif input == "3"
         #return setup_algo(["mcts", "3", "10", "5", ".9", "1000"])
-        return setup_algo(["mcts", "4", "7", "5", ".9"])
-
+        return setup_algo(["mcts", "15", "5", "15", ".9"])
     elseif input == "4"
         return setup_algo(["composite", "3", "7", "5", "4", "15", ".9"])
         #return setup_algo(["composite", "3", "10", "5", "4", "15", ".9", "1000"])
@@ -90,9 +89,9 @@ function setup_algo(params)
         algo = MonteCarloTreeSearch(N, Q, d, m, c, γ)
         if (isempty(algo.N)) 
             println("Please wait while the MCTS model is trained.")
-            algo = train(d, m, c, γ, 1000, 1000000000)
-            algo.c = 0
+            algo = train(d, m, c, γ, 1000, 2500)
         end
+        algo.m = 100
     end
 
     if (params[1] == "composite")
@@ -110,14 +109,13 @@ function setup_algo(params)
         if length(params) == 8
             N = BSON.load("mcts_states/rr_mcts_N_game_" * params[8] * "_d" * string(d_mcts) * "_m" * string(m))
             Q = BSON.load("mcts_states/rr_mcts_Q_game_" * params[8] * "_d" * string(d_mcts) * "_m" * string(m))
-            c = 0
         end
         algo1 = MonteCarloTreeSearch(N, Q, d_mcts, m, c, γ)
         if (isempty(algo1.N)) 
             println("Please wait while the MCTS model is trained.")
             algo1 = train(d_mcts, m, c, γ, 1000, 1000000000)
-            algo1.c = 0
         end
+        algo.m = 100
         algo2 = ExpectiMiniMax(d_expectiminimax, γ)
         algo = Composite(algo1, algo2, τ, 0)
     end
